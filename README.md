@@ -20,6 +20,23 @@ Add the MCP server to Cursor/Claude Desktop/etc. with the following execution co
 npx coda-mcp@latest
 ```
 
+For example, in Cursor, you can add it like so:
+
+```json
+{
+  "mcpServers": {
+    "coda": {
+      "command": "npx",
+      "args": ["coda-mcp@latest"],
+      "env": {
+        "API_KEY": "...",
+        "DOC_ID": "..."
+      }
+    }
+  }
+}
+```
+
 Required environment variables:
 
 - `API_KEY`: Your Coda API key. You can generate one from your Coda account settings.
