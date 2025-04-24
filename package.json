@@ -1,0 +1,29 @@
+{
+  "name": "coda-mcp",
+  "version": "1.0.0",
+  "description": "MCP Server for Coda",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "openapi-ts": "openapi-ts"
+  },
+  "dependencies": {
+    "@hey-api/client-axios": "^0.7.0",
+    "@modelcontextprotocol/sdk": "^1.10.2",
+    "axios": "^1.8.4",
+    "zod": "^3.24.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.25.1",
+    "@hey-api/openapi-ts": "^0.66.6",
+    "@types/node": "^22.14.1",
+    "eslint": "^9.25.1",
+    "globals": "^16.0.0",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.31.0"
+  },
+  "packageManager": "pnpm@10.9.0"
+}
