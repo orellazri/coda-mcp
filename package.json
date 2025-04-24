@@ -5,9 +5,14 @@
   "repository": {
     "url": "https://github.com/orellazri/coda-mcp"
   },
-  "main": "./dist/index.js",
+  "bin": {
+    "coda": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && chmod 755 dist/index.js",
     "lint": "eslint .",
     "format": "prettier --write .",
     "openapi-ts": "openapi-ts"

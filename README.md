@@ -12,7 +12,20 @@ The server exposes the following tools to the MCP client:
 - **`update-page`**: Replaces or appends markdown content to a specified page.
 - **`duplicate-page`**: Creates a copy of an existing page with a new name.
 
-## Setup
+## Usage
+
+Add the MCP server to Cursor/Claude Desktop/etc. with the following execution command:
+
+```bash
+npx coda-mcp@latest
+```
+
+Required environment variables:
+
+- `API_KEY`: Your Coda API key. You can generate one from your Coda account settings.
+- `DOC_ID`: The ID of the Coda document you want the server to interact with. You can find this in the document's URL (the part after `d`).
+
+## Local Setup
 
 1.  **Prerequisites:**
 
@@ -32,13 +45,7 @@ The server exposes the following tools to the MCP client:
     pnpm install
     ```
 
-4.  **Configuration:**
-    This server requires a Coda API key and the ID of the target Coda document. Set the following environment variables:
-
-    - `API_KEY`: Your Coda API key. You can generate one from your Coda account settings.
-    - `DOC_ID`: The ID of the Coda document you want the server to interact with. You can find this in the document's URL (the part after `d`).
-
-5.  **Build the project:**
+4.  **Build the project:**
     ```bash
     pnpm build
     ```
