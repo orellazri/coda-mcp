@@ -17,10 +17,6 @@ fi
 # Update package.json version
 pnpm dlx json -I -f package.json -e "this.version='$VERSION'"
 
-# Update src/index.ts version
-sed -i '' "s/version: \"[0-9]\+\.[0-9]\+\.[0-9]\+\"/version: \"$VERSION\"/" src/index.ts
-git add src/index.ts
-
 # Commit the change
 git add package.json
 git commit -m "chore: bump version to $VERSION"

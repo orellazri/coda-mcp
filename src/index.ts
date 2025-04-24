@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
+import packageJson from "../package.json";
 import { listPages } from "./client";
 import { client } from "./client/client.gen";
 import { getPageContent } from "./client/helpers";
@@ -9,7 +10,7 @@ import { config } from "./config";
 
 const server = new McpServer({
   name: "coda",
-  version: "1.0.0",
+  version: packageJson.version,
   capabilities: {
     resources: {},
     tools: {},
