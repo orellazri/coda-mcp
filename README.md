@@ -20,7 +20,7 @@ Add the MCP server to Cursor/Claude Desktop/etc. with the following execution co
 npx coda-mcp@latest
 ```
 
-For example, in Cursor, you can add it like so:
+For example, in Cursor/Claude Desktop, you can add it like so:
 
 ```json
 {
