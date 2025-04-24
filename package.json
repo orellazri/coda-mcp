@@ -2,6 +2,9 @@
   "name": "coda-mcp",
   "version": "1.0.0",
   "description": "MCP Server for Coda",
+  "repository": {
+    "url": "https://github.com/orellazri/coda-mcp"
+  },
   "main": "./dist/index.js",
   "scripts": {
     "build": "tsc",
