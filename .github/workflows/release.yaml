@@ -34,6 +34,6 @@ jobs:
         run: pnpm build
 
       - name: Publish package to npm registry
-        run: pnpm publish --provenance --access public
+        run: pnpm publish --provenance --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
