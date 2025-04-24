@@ -27,7 +27,7 @@ For example, in Cursor, you can add it like so:
   "mcpServers": {
     "coda": {
       "command": "npx",
-      "args": ["coda-mcp@latest"],
+      "args": ["-y", "coda-mcp@latest"],
       "env": {
         "API_KEY": "...",
         "DOC_ID": "..."
