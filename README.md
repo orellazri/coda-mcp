@@ -21,7 +21,7 @@ The server exposes the following tools to the MCP client:
 Add the MCP server to Cursor/Claude Desktop/etc. with the following execution command:
 
 ```bash
-npx coda-mcp@latest
+npx -y coda-mcp@latest
 ```
 
 For example, in Cursor/Claude Desktop, you can add it like so:
