@@ -78,14 +78,13 @@ server.tool(
 );
 
 server.tool(
-  "update-page",
-  "Replace or append to the content of a page",
+  "replace-page-content",
+  "Replace the content of a page with new markdown content",
   {
     pageIdOrName: z.string().describe("The ID or name of the page to replace the content of"),
     content: z.string().describe("The markdown content to replace the page with"),
-    append: z.boolean().describe("Whether to append the content to the page instead of replacing it"),
   },
-  async ({ pageIdOrName, content, append }) => {
+  async ({ pageIdOrName, content }) => {
     try {
       const resp = await updatePage({
         path: {
@@ -95,7 +94,7 @@ server.tool(
         body: {
           // @ts-expect-error auto-generated client types
           contentUpdate: {
-            insertionMode: append ? "append" : "replace",
+            insertionMode: "replace",
             canvasContent: { format: "markdown", content },
           },
         },
@@ -104,6 +103,36 @@ server.tool(
       return { content: [{ type: "text", text: JSON.stringify(resp.data) }] };
     } catch {
       return { content: [{ type: "text", text: "Failed to replace page content" }], isError: true };
+    }
+  },
+);
+
+server.tool(
+  "append-page-content",
+  "Append new markdown content to the end of a page",
+  {
+    pageIdOrName: z.string().describe("The ID or name of the page to append the content to"),
+    content: z.string().describe("The markdown content to append to the page"),
+  },
+  async ({ pageIdOrName, content }) => {
+    try {
+      const resp = await updatePage({
+        path: {
+          docId: config.docId,
+          pageIdOrName,
+        },
+        body: {
+          // @ts-expect-error auto-generated client types
+          contentUpdate: {
+            insertionMode: "append",
+            canvasContent: { format: "markdown", content },
+          },
+        },
+      });
+
+      return { content: [{ type: "text", text: JSON.stringify(resp.data) }] };
+    } catch {
+      return { content: [{ type: "text", text: "Failed to append page content" }], isError: true };
     }
   },
 );

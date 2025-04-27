@@ -13,7 +13,8 @@ The server exposes the following tools to the MCP client:
 - **`list-pages`**: Lists all pages within the configured Coda document.
 - **`create-page`**: Creates a new page in the document, optionally populating it with initial markdown content.
 - **`get-page-content`**: Retrieves the content of a specified page (by ID or name) as markdown.
-- **`update-page`**: Replaces or appends markdown content to a specified page.
+- **`replace-page-content`**: Replaces the content of a specified page with new markdown content.
+- **`append-page-content`**: Appends new markdown content to the end of a specified page.
 - **`duplicate-page`**: Creates a copy of an existing page with a new name.
 
 ## Usage
