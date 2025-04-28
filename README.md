@@ -1,6 +1,6 @@
 # Coda MCP Server
 
-This project implements a Model Context Protocol (MCP) server that acts as a bridge to interact with the [Coda](https://coda.io/) API. It allows an MCP client (like an AI assistant) to perform actions on a specific Coda document, such as listing, creating, reading, updating, and duplicating pages.
+This project implements a Model Context Protocol (MCP) server that acts as a bridge to interact with the [Coda](https://coda.io/) API. It allows an MCP client (like an AI assistant) to perform actions on a specific Coda document, such as listing, creating, reading, updating, duplicating, and renaming pages.
 
 <a href="https://glama.ai/mcp/servers/@orellazri/coda-mcp">
   <img width="380" height="200" src="https://glama.ai/mcp/servers/@orellazri/coda-mcp/badge" alt="Coda Server MCP server" />
@@ -16,6 +16,7 @@ The server exposes the following tools to the MCP client:
 - **`replace-page-content`**: Replaces the content of a specified page with new markdown content.
 - **`append-page-content`**: Appends new markdown content to the end of a specified page.
 - **`duplicate-page`**: Creates a copy of an existing page with a new name.
+- **`rename-page`**: Renames an existing page.
 
 ## Usage
 

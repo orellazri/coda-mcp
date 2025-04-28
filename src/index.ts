@@ -161,6 +161,28 @@ server.tool(
   },
 );
 
+server.tool(
+  "rename-page",
+  "Rename a page in the current document",
+  {
+    pageIdOrName: z.string().describe("The ID or name of the page to rename"),
+    newName: z.string().describe("The new name of the page"),
+  },
+  async ({ pageIdOrName, newName }) => {
+    try {
+      const resp = await updatePage({
+        path: { docId: config.docId, pageIdOrName },
+        body: {
+          name: newName,
+        },
+      });
+      return { content: [{ type: "text", text: JSON.stringify(resp.data) }] };
+    } catch {
+      return { content: [{ type: "text", text: "Failed to rename page" }], isError: true };
+    }
+  },
+);
+
 async function main() {
   // Initialize Axios Client
   client.setConfig({
