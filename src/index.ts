@@ -38,7 +38,7 @@ server.tool(
   "Create a page in the current document",
   {
     name: z.string().describe("The name of the page to create"),
-    content: z.string().optional().describe("The markdown content of the page to create"),
+    content: z.string().optional().describe("The markdown content of the page to create - optional"),
   },
   async ({ name, content }) => {
     try {
@@ -48,7 +48,7 @@ server.tool(
           name,
           pageContent: {
             type: "canvas",
-            canvasContent: { format: "markdown", content: content ?? "" },
+            canvasContent: { format: "markdown", content: content ?? " " },
           },
         },
       });
