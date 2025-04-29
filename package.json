@@ -15,7 +15,8 @@
     "build": "tsc && chmod 755 dist/index.js",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "openapi-ts": "openapi-ts"
+    "openapi-ts": "openapi-ts",
+    "inspect": "pnpm dlx @modelcontextprotocol/inspector dist/index.js"
   },
   "dependencies": {
     "@hey-api/client-axios": "^0.7.0",
