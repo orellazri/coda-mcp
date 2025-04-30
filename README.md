@@ -46,7 +46,7 @@ For example, in Cursor/Claude Desktop, you can add it like so:
 Required environment variables:
 
 - `API_KEY`: Your Coda API key. You can generate one from your Coda account settings.
-- `DOC_ID`: The ID of the Coda document you want the server to interact with. You can find this in the document's URL (the part after `d`).
+- `DOC_ID`: The ID of the Coda document you want the server to interact with. You can find this in the document's URL (the part after `_d`).
 
 ## Local Setup
 
