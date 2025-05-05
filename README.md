@@ -42,6 +42,12 @@ Required environment variables:
 - `API_KEY`: Your Coda API key. You can generate one from your Coda account settings.
 - `DOC_ID`: The ID of the Coda document you want the server to interact with. You can find this in the document's URL (the part after `_d`).
 
+This MCP is also available with `npx`, like so:
+
+```bash
+npx -y coda-mcp@latest
+```
+
 ## Local Setup
 
 1.  **Prerequisites:**
