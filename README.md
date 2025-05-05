@@ -20,24 +20,14 @@ The server exposes the following tools to the MCP client:
 
 ## Usage
 
-Add the MCP server to Cursor/Claude Desktop/etc. with the following execution command:
-
-```bash
-npx -y coda-mcp@latest
-```
-
-For example, in Cursor/Claude Desktop, you can add it like so:
+Add the MCP server to Cursor/Claude Desktop/etc. like so:
 
 ```json
 {
   "mcpServers": {
     "coda": {
-      "command": "npx",
-      "args": ["-y", "coda-mcp@latest"],
-      "env": {
-        "API_KEY": "...",
-        "DOC_ID": "..."
-      }
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "-e", "API_KEY", "-e", "DOC_ID", "reaperberri/coda-mcp:latest"]
     }
   }
 }

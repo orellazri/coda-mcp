@@ -1,4 +1,4 @@
-name: Release and Publish to npm
+name: Release and Publish to Docker Hub
 
 on:
   push:
@@ -18,26 +18,21 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Log in to Docker Hub
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
         with:
-          node-version: "23.x"
-          registry-url: "https://registry.npmjs.org/"
-          cache: "pnpm"
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Build project
-        run: pnpm build
-
-      - name: Publish package to npm registry
-        run: pnpm publish --provenance --access public --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Build and Push Docker image
+        run: |
+          VERSION_TAG=${GITHUB_REF#refs/tags/v}
+          docker buildx build --push --platform linux/amd64,linux/arm64/v8 \
+            --tag reaperberri/coda-mcp:latest \
+            --tag reaperberri/coda-mcp:${VERSION_TAG} .
 
       - name: Build Changelog
         uses: mikepenz/release-changelog-builder-action@v5
