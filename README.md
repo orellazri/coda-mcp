@@ -27,7 +27,7 @@ Add the MCP server to Cursor/Claude Desktop/etc. like so:
   "mcpServers": {
     "coda": {
       "command": "docker",
-      "args": ["run", "-i", "--rm", "-e", "API_KEY", "-e", "DOC_ID", "reaperberri/coda-mcp:latest"]
+      "args": ["run", "-i", "--rm", "-e", "API_KEY", "-e", "DOC_ID", "reaperberri/coda-mcp:latest"],
       "env": {
         "API_KEY": "...",
         "DOC_ID": "..."
