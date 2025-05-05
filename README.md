@@ -26,8 +26,8 @@ Add the MCP server to Cursor/Claude Desktop/etc. like so:
 {
   "mcpServers": {
     "coda": {
-      "command": "docker",
-      "args": ["run", "-i", "--rm", "-e", "API_KEY", "-e", "DOC_ID", "reaperberri/coda-mcp:latest"],
+      "command": "npx",
+      "args": ["-y", "coda-mcp@latest"],
       "env": {
         "API_KEY": "...",
         "DOC_ID": "..."
@@ -42,7 +42,22 @@ Required environment variables:
 - `API_KEY`: Your Coda API key. You can generate one from your Coda account settings.
 - `DOC_ID`: The ID of the Coda document you want the server to interact with. You can find this in the document's URL (the part after `_d`).
 
-This MCP is also available with `npx`, like so:
+This MCP is also available with Docker, like so:
+
+```json
+{
+  "mcpServers": {
+    "coda": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "-e", "API_KEY", "-e", "DOC_ID", "reaperberri/coda-mcp:latest"],
+      "env": {
+        "API_KEY": "...",
+        "DOC_ID": "..."
+      }
+    }
+  }
+}
+```
 
 ```bash
 npx -y coda-mcp@latest
