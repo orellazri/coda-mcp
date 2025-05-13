@@ -20,19 +20,19 @@
   },
   "dependencies": {
     "@hey-api/client-axios": "^0.7.0",
-    "@modelcontextprotocol/sdk": "^1.10.2",
-    "axios": "^1.8.4",
-    "zod": "^3.24.3"
+    "@modelcontextprotocol/sdk": "^1.11.2",
+    "axios": "^1.9.0",
+    "zod": "^3.24.4"
   },
   "devDependencies": {
-    "@eslint/js": "^9.25.1",
-    "@hey-api/openapi-ts": "^0.66.6",
-    "@types/node": "^22.14.1",
-    "eslint": "^9.25.1",
-    "globals": "^16.0.0",
+    "@eslint/js": "^9.26.0",
+    "@hey-api/openapi-ts": "^0.67.3",
+    "@types/node": "^22.15.17",
+    "eslint": "^9.26.0",
+    "globals": "^16.1.0",
     "prettier": "^3.5.3",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.31.0"
+    "typescript-eslint": "^8.32.1"
   },
   "packageManager": "pnpm@10.9.0"
 }
