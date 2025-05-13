@@ -19,7 +19,7 @@ const server = new McpServer({
   },
 });
 
-server.tool("list-pages", "List pages in the current document", async () => {
+server.tool("coda_list_pages", "List pages in the current document", async () => {
   try {
     const resp = await listPages({ path: { docId: config.docId } });
     return {
@@ -34,7 +34,7 @@ server.tool("list-pages", "List pages in the current document", async () => {
 });
 
 server.tool(
-  "create-page",
+  "coda_create_page",
   "Create a page in the current document",
   {
     name: z.string().describe("The name of the page to create"),
@@ -62,7 +62,7 @@ server.tool(
 );
 
 server.tool(
-  "get-page-content",
+  "coda_get_page_content",
   "Get the content of a page as markdown",
   {
     pageIdOrName: z.string().describe("The ID or name of the page to get the content of"),
@@ -78,7 +78,7 @@ server.tool(
 );
 
 server.tool(
-  "replace-page-content",
+  "coda_replace_page_content",
   "Replace the content of a page with new markdown content",
   {
     pageIdOrName: z.string().describe("The ID or name of the page to replace the content of"),
@@ -108,7 +108,7 @@ server.tool(
 );
 
 server.tool(
-  "append-page-content",
+  "coda_append_page_content",
   "Append new markdown content to the end of a page",
   {
     pageIdOrName: z.string().describe("The ID or name of the page to append the content to"),
@@ -138,7 +138,7 @@ server.tool(
 );
 
 server.tool(
-  "duplicate-page",
+  "coda_duplicate_page",
   "Duplicate a page in the current document",
   {
     pageIdOrName: z.string().describe("The ID or name of the page to duplicate"),
@@ -162,7 +162,7 @@ server.tool(
 );
 
 server.tool(
-  "rename-page",
+  "coda_rename_page",
   "Rename a page in the current document",
   {
     pageIdOrName: z.string().describe("The ID or name of the page to rename"),
