@@ -19,14 +19,21 @@ const server = new McpServer({
   },
 });
 
-server.tool("coda_list_documents", "List available documents", async () => {
-  try {
-    const resp = await listDocs();
-    return { content: [{ type: "text", text: JSON.stringify(resp.data) }] };
-  } catch {
-    return { content: [{ type: "text", text: "Failed to list documents" }], isError: true };
-  }
-});
+server.tool(
+  "coda_list_documents",
+  "List available documents",
+  {
+    query: z.string().optional().describe("The query to search for documents by - optional"),
+  },
+  async ({ query }) => {
+    try {
+      const resp = await listDocs({ query: { query } });
+      return { content: [{ type: "text", text: JSON.stringify(resp.data) }] };
+    } catch {
+      return { content: [{ type: "text", text: "Failed to list documents" }], isError: true };
+    }
+  },
+);
 
 server.tool(
   "coda_list_pages",
