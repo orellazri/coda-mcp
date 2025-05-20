@@ -7,7 +7,7 @@ import packageJson from "../package.json";
 import { listPages } from "./client";
 import { client } from "./client/client.gen";
 import { getPageContent } from "./client/helpers";
-import { createPage, updatePage } from "./client/sdk.gen";
+import { createPage, listDocs, updatePage } from "./client/sdk.gen";
 import { config } from "./config";
 
 const server = new McpServer({
@@ -19,31 +19,48 @@ const server = new McpServer({
   },
 });
 
-server.tool("coda_list_pages", "List pages in the current document", async () => {
+server.tool("coda_list_documents", "List available documents", async () => {
   try {
-    const resp = await listPages({ path: { docId: config.docId } });
-    return {
-      content: [{ type: "text", text: JSON.stringify(resp.data) }],
-    };
+    const resp = await listDocs();
+    return { content: [{ type: "text", text: JSON.stringify(resp.data) }] };
   } catch {
-    return {
-      content: [{ type: "text", text: "Failed to list pages" }],
-      isError: true,
-    };
+    return { content: [{ type: "text", text: "Failed to list documents" }], isError: true };
   }
 });
+
+server.tool(
+  "coda_list_pages",
+  "List pages in the current document",
+  {
+    docId: z.string().describe("The ID of the document to list pages from"),
+  },
+  async ({ docId }) => {
+    try {
+      const resp = await listPages({ path: { docId } });
+      return {
+        content: [{ type: "text", text: JSON.stringify(resp.data) }],
+      };
+    } catch {
+      return {
+        content: [{ type: "text", text: "Failed to list pages" }],
+        isError: true,
+      };
+    }
+  },
+);
 
 server.tool(
   "coda_create_page",
   "Create a page in the current document",
   {
+    docId: z.string().describe("The ID of the document to create the page in"),
     name: z.string().describe("The name of the page to create"),
     content: z.string().optional().describe("The markdown content of the page to create - optional"),
   },
-  async ({ name, content }) => {
+  async ({ docId, name, content }) => {
     try {
       const resp = await createPage({
-        path: { docId: config.docId },
+        path: { docId },
         body: {
           name,
           pageContent: {
@@ -65,11 +82,12 @@ server.tool(
   "coda_get_page_content",
   "Get the content of a page as markdown",
   {
+    docId: z.string().describe("The ID of the document that contains the page to get the content of"),
     pageIdOrName: z.string().describe("The ID or name of the page to get the content of"),
   },
-  async ({ pageIdOrName }) => {
+  async ({ docId, pageIdOrName }) => {
     try {
-      const content = await getPageContent(config.docId, pageIdOrName);
+      const content = await getPageContent(docId, pageIdOrName);
       return { content: [{ type: "text", text: content }] };
     } catch {
       return { content: [{ type: "text", text: "Failed to get page content" }], isError: true };
@@ -81,14 +99,15 @@ server.tool(
   "coda_replace_page_content",
   "Replace the content of a page with new markdown content",
   {
+    docId: z.string().describe("The ID of the document that contains the page to replace the content of"),
     pageIdOrName: z.string().describe("The ID or name of the page to replace the content of"),
     content: z.string().describe("The markdown content to replace the page with"),
   },
-  async ({ pageIdOrName, content }) => {
+  async ({ docId, pageIdOrName, content }) => {
     try {
       const resp = await updatePage({
         path: {
-          docId: config.docId,
+          docId,
           pageIdOrName,
         },
         body: {
@@ -111,14 +130,15 @@ server.tool(
   "coda_append_page_content",
   "Append new markdown content to the end of a page",
   {
+    docId: z.string().describe("The ID of the document that contains the page to append the content to"),
     pageIdOrName: z.string().describe("The ID or name of the page to append the content to"),
     content: z.string().describe("The markdown content to append to the page"),
   },
-  async ({ pageIdOrName, content }) => {
+  async ({ docId, pageIdOrName, content }) => {
     try {
       const resp = await updatePage({
         path: {
-          docId: config.docId,
+          docId,
           pageIdOrName,
         },
         body: {
@@ -141,14 +161,15 @@ server.tool(
   "coda_duplicate_page",
   "Duplicate a page in the current document",
   {
+    docId: z.string().describe("The ID of the document that contains the page to duplicate"),
     pageIdOrName: z.string().describe("The ID or name of the page to duplicate"),
     newName: z.string().describe("The name of the new page"),
   },
-  async ({ pageIdOrName, newName }) => {
+  async ({ docId, pageIdOrName, newName }) => {
     try {
-      const pageContent = await getPageContent(config.docId, pageIdOrName);
+      const pageContent = await getPageContent(docId, pageIdOrName);
       const createResp = await createPage({
-        path: { docId: config.docId },
+        path: { docId },
         body: {
           name: newName,
           pageContent: { type: "canvas", canvasContent: { format: "markdown", content: pageContent } },
@@ -165,13 +186,14 @@ server.tool(
   "coda_rename_page",
   "Rename a page in the current document",
   {
+    docId: z.string().describe("The ID of the document that contains the page to rename"),
     pageIdOrName: z.string().describe("The ID or name of the page to rename"),
     newName: z.string().describe("The new name of the page"),
   },
-  async ({ pageIdOrName, newName }) => {
+  async ({ docId, pageIdOrName, newName }) => {
     try {
       const resp = await updatePage({
-        path: { docId: config.docId, pageIdOrName },
+        path: { docId, pageIdOrName },
         body: {
           name: newName,
         },

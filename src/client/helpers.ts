@@ -1,5 +1,4 @@
 import axios from "axios";
-import { config } from "../config";
 import { beginPageContentExport, getPageContentExportStatus } from "./sdk.gen";
 
 export async function getPageContent(docId: string, pageIdOrName: string) {
@@ -32,7 +31,7 @@ export async function getPageContent(docId: string, pageIdOrName: string) {
     try {
       const exportStatusResp = await getPageContentExportStatus({
         path: {
-          docId: config.docId,
+          docId,
           pageIdOrName,
           requestId,
         },

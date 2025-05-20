@@ -1,6 +1,7 @@
 # Coda MCP Server
 
-This project implements a Model Context Protocol (MCP) server that acts as a bridge to interact with the [Coda](https://coda.io/) API. It allows an MCP client (like an AI assistant) to perform actions on a specific Coda document, such as listing, creating, reading, updating, duplicating, and renaming pages.
+This project implements a Model Context Protocol (MCP) server that acts as a bridge to interact with the [Coda](https://coda.io/) API. It allows an MCP client (like an AI assistant) to perform actions on a specific Coda
+ument, such as listing, creating, reading, updating, duplicating, and renaming pages.
 
 <a href="https://glama.ai/mcp/servers/@orellazri/coda-mcp">
   <img width="380" height="200" src="https://glama.ai/mcp/servers/@orellazri/coda-mcp/badge" alt="Coda Server MCP server" />
@@ -10,6 +11,7 @@ This project implements a Model Context Protocol (MCP) server that acts as a bri
 
 The server exposes the following tools to the MCP client:
 
+- **`coda_list_documents`**: Lists all documents available to the user.
 - **`coda_list_pages`**: Lists all pages within the configured Coda document.
 - **`coda_create_page`**: Creates a new page in the document, optionally populating it with initial markdown content.
 - **`coda_get_page_content`**: Retrieves the content of a specified page (by ID or name) as markdown.
@@ -29,8 +31,7 @@ Add the MCP server to Cursor/Claude Desktop/etc. like so:
       "command": "npx",
       "args": ["-y", "coda-mcp@latest"],
       "env": {
-        "API_KEY": "...",
-        "DOC_ID": "..."
+        "API_KEY": "..."
       }
     }
   }
@@ -40,7 +41,6 @@ Add the MCP server to Cursor/Claude Desktop/etc. like so:
 Required environment variables:
 
 - `API_KEY`: Your Coda API key. You can generate one from your Coda account settings.
-- `DOC_ID`: The ID of the Coda document you want the server to interact with. You can find this in the document's URL (the part after `_d`).
 
 This MCP server is also available with Docker, like so:
 
@@ -49,10 +49,9 @@ This MCP server is also available with Docker, like so:
   "mcpServers": {
     "coda": {
       "command": "docker",
-      "args": ["run", "-i", "--rm", "-e", "API_KEY", "-e", "DOC_ID", "reaperberri/coda-mcp:latest"],
+      "args": ["run", "-i", "--rm", "-e", "API_KEY", "reaperberri/coda-mcp:latest"],
       "env": {
-        "API_KEY": "...",
-        "DOC_ID": "..."
+        "API_KEY": "..."
       }
     }
   }
