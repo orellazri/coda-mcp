@@ -14,12 +14,18 @@ export async function getPageContent(docId: string, pageIdOrName: string) {
         outputFormat: "markdown",
       },
     });
+
+    if (beginExportResp.error) {
+      throw new Error(beginExportResp.error.message);
+    }
+
     if (!beginExportResp.data) {
       throw new Error("Failed to begin page content export");
     }
+
     requestId = beginExportResp.data.id;
-  } catch {
-    throw new Error("Failed to get page content");
+  } catch (error) {
+    throw new Error(`Failed to get page content: ${error}`);
   }
 
   // Poll for export status
@@ -37,12 +43,16 @@ export async function getPageContent(docId: string, pageIdOrName: string) {
         },
       });
 
+      if (exportStatusResp.error) {
+        throw new Error(exportStatusResp.error.message);
+      }
+
       if (exportStatusResp.data?.status === "complete") {
         downloadLink = exportStatusResp.data.downloadLink;
         break;
       }
-    } catch {
-      throw new Error("Failed to get page content export status");
+    } catch (error) {
+      throw new Error(`Failed to get page content export status: ${error}`);
     }
 
     retries++;

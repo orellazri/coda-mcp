@@ -28,9 +28,14 @@ server.tool(
   async ({ query }) => {
     try {
       const resp = await listDocs({ query: { query } });
+
+      if (resp.error) {
+        throw new Error(resp.error.message);
+      }
+
       return { content: [{ type: "text", text: JSON.stringify(resp.data) }] };
-    } catch {
-      return { content: [{ type: "text", text: "Failed to list documents" }], isError: true };
+    } catch (error) {
+      return { content: [{ type: "text", text: `Failed to list documents: ${error}` }], isError: true };
     }
   },
 );
@@ -44,12 +49,17 @@ server.tool(
   async ({ docId }) => {
     try {
       const resp = await listPages({ path: { docId } });
+
+      if (resp.error) {
+        throw new Error(resp.error.message);
+      }
+
       return {
         content: [{ type: "text", text: JSON.stringify(resp.data) }],
       };
-    } catch {
+    } catch (error) {
       return {
-        content: [{ type: "text", text: "Failed to list pages" }],
+        content: [{ type: "text", text: `Failed to list pages: ${error}` }],
         isError: true,
       };
     }
@@ -76,11 +86,16 @@ server.tool(
           },
         },
       });
+
+      if (resp.error) {
+        throw new Error(resp.error.message);
+      }
+
       return {
         content: [{ type: "text", text: JSON.stringify(resp.data) }],
       };
-    } catch {
-      return { content: [{ type: "text", text: "Failed to create page" }], isError: true };
+    } catch (error) {
+      return { content: [{ type: "text", text: `Failed to create page: ${error}` }], isError: true };
     }
   },
 );
@@ -95,8 +110,13 @@ server.tool(
   async ({ docId, pageIdOrName }) => {
     try {
       const content = await getPageContent(docId, pageIdOrName);
+
+      if (!content) {
+        throw new Error("Failed to get page content");
+      }
+
       return { content: [{ type: "text", text: content }] };
-    } catch {
+    } catch (error) {
       return { content: [{ type: "text", text: "Failed to get page content" }], isError: true };
     }
   },
@@ -126,9 +146,13 @@ server.tool(
         },
       });
 
+      if (resp.error) {
+        throw new Error(resp.error.message);
+      }
+
       return { content: [{ type: "text", text: JSON.stringify(resp.data) }] };
-    } catch {
-      return { content: [{ type: "text", text: "Failed to replace page content" }], isError: true };
+    } catch (error) {
+      return { content: [{ type: "text", text: `Failed to replace page content: ${error}` }], isError: true };
     }
   },
 );
@@ -157,9 +181,13 @@ server.tool(
         },
       });
 
+      if (resp.error) {
+        throw new Error(resp.error.message);
+      }
+
       return { content: [{ type: "text", text: JSON.stringify(resp.data) }] };
-    } catch {
-      return { content: [{ type: "text", text: "Failed to append page content" }], isError: true };
+    } catch (error) {
+      return { content: [{ type: "text", text: `Failed to append page content: ${error}` }], isError: true };
     }
   },
 );
@@ -182,9 +210,14 @@ server.tool(
           pageContent: { type: "canvas", canvasContent: { format: "markdown", content: pageContent } },
         },
       });
+
+      if (createResp.error) {
+        throw new Error(createResp.error.message);
+      }
+
       return { content: [{ type: "text", text: JSON.stringify(createResp.data) }] };
-    } catch {
-      return { content: [{ type: "text", text: "Failed to duplicate page" }], isError: true };
+    } catch (error) {
+      return { content: [{ type: "text", text: `Failed to duplicate page: ${error}` }], isError: true };
     }
   },
 );
@@ -205,9 +238,14 @@ server.tool(
           name: newName,
         },
       });
+
+      if (resp.error) {
+        throw new Error(resp.error.message);
+      }
+
       return { content: [{ type: "text", text: JSON.stringify(resp.data) }] };
-    } catch {
-      return { content: [{ type: "text", text: "Failed to rename page" }], isError: true };
+    } catch (error) {
+      return { content: [{ type: "text", text: `Failed to rename page: ${error}` }], isError: true };
     }
   },
 );
