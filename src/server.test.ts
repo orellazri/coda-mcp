@@ -224,7 +224,9 @@ describe("coda_get_page_content", () => {
       docId: "doc-123",
       pageIdOrName: "page-456",
     });
-    expect(result.content).toEqual([{ type: "text", text: "Failed to get page content" }]);
+    expect(result.content).toEqual([
+      { type: "text", text: "Failed to get page content: Error: Unknown error has occurred" },
+    ]);
   });
 
   it("should show error if getPageContent throws", async () => {
@@ -235,7 +237,7 @@ describe("coda_get_page_content", () => {
       docId: "doc-123",
       pageIdOrName: "page-456",
     });
-    expect(result.content).toEqual([{ type: "text", text: "Failed to get page content" }]);
+    expect(result.content).toEqual([{ type: "text", text: "Failed to get page content: Error: Export failed" }]);
   });
 });
 

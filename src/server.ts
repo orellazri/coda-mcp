@@ -96,12 +96,12 @@ server.tool(
       const content = await getPageContent(docId, pageIdOrName);
 
       if (!content) {
-        throw new Error("Failed to get page content");
+        throw new Error("Unknown error has occurred");
       }
 
       return { content: [{ type: "text", text: content }] };
     } catch (error) {
-      return { content: [{ type: "text", text: "Failed to get page content" }], isError: true };
+      return { content: [{ type: "text", text: `Failed to get page content: ${error}` }], isError: true };
     }
   },
 );
