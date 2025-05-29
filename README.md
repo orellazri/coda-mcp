@@ -91,9 +91,3 @@ npx -y coda-mcp@latest
 ## Running the Server
 
 The MCP server communicates over standard input/output (stdio). To run it, set the environment variables and run the compiled JavaScript file - `dist/index.js`.
-
-## Development
-
-- **Linting:** `pnpm lint`
-- **Formatting:** `pnpm format`
-- **OpenAPI Client Generation:** `pnpm openapi-ts` (if the Coda API spec changes)
