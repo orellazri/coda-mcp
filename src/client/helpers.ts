@@ -13,11 +13,8 @@ export async function getPageContent(docId: string, pageIdOrName: string) {
       body: {
         outputFormat: "markdown",
       },
+      throwOnError: true,
     });
-
-    if (beginExportResp.error) {
-      throw new Error(beginExportResp.error.message);
-    }
 
     if (!beginExportResp.data) {
       throw new Error("Failed to begin page content export");
@@ -41,11 +38,8 @@ export async function getPageContent(docId: string, pageIdOrName: string) {
           pageIdOrName,
           requestId,
         },
+        throwOnError: true,
       });
-
-      if (exportStatusResp.error) {
-        throw new Error(exportStatusResp.error.message);
-      }
 
       if (exportStatusResp.data?.status === "complete") {
         downloadLink = exportStatusResp.data.downloadLink;

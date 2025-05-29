@@ -22,11 +22,7 @@ server.tool(
   },
   async ({ query }): Promise<CallToolResult> => {
     try {
-      const resp = await listDocs({ query: { query } });
-
-      if (resp.error) {
-        throw new Error(resp.error.message);
-      }
+      const resp = await listDocs({ query: { query }, throwOnError: true });
 
       return { content: [{ type: "text", text: JSON.stringify(resp.data) }] };
     } catch (error) {
@@ -43,11 +39,7 @@ server.tool(
   },
   async ({ docId }): Promise<CallToolResult> => {
     try {
-      const resp = await listPages({ path: { docId } });
-
-      if (resp.error) {
-        throw new Error(resp.error.message);
-      }
+      const resp = await listPages({ path: { docId }, throwOnError: true });
 
       return {
         content: [{ type: "text", text: JSON.stringify(resp.data) }],
@@ -80,11 +72,8 @@ server.tool(
             canvasContent: { format: "markdown", content: content ?? " " },
           },
         },
+        throwOnError: true,
       });
-
-      if (resp.error) {
-        throw new Error(resp.error.message);
-      }
 
       return {
         content: [{ type: "text", text: JSON.stringify(resp.data) }],
@@ -139,11 +128,8 @@ server.tool(
             canvasContent: { format: "markdown", content },
           },
         },
+        throwOnError: true,
       });
-
-      if (resp.error) {
-        throw new Error(resp.error.message);
-      }
 
       return { content: [{ type: "text", text: JSON.stringify(resp.data) }] };
     } catch (error) {
@@ -174,11 +160,8 @@ server.tool(
             canvasContent: { format: "markdown", content },
           },
         },
+        throwOnError: true,
       });
-
-      if (resp.error) {
-        throw new Error(resp.error.message);
-      }
 
       return { content: [{ type: "text", text: JSON.stringify(resp.data) }] };
     } catch (error) {
@@ -204,11 +187,8 @@ server.tool(
           name: newName,
           pageContent: { type: "canvas", canvasContent: { format: "markdown", content: pageContent } },
         },
+        throwOnError: true,
       });
-
-      if (createResp.error) {
-        throw new Error(createResp.error.message);
-      }
 
       return { content: [{ type: "text", text: JSON.stringify(createResp.data) }] };
     } catch (error) {
@@ -232,11 +212,8 @@ server.tool(
         body: {
           name: newName,
         },
+        throwOnError: true,
       });
-
-      if (resp.error) {
-        throw new Error(resp.error.message);
-      }
 
       return { content: [{ type: "text", text: JSON.stringify(resp.data) }] };
     } catch (error) {
