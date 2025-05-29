@@ -23,6 +23,7 @@ git commit -m "chore: bump version to $VERSION"
 
 # Create and push the tag
 git tag "v$VERSION"
+git push origin main
 git push --tags
 
 echo "✅ Version bumped to $VERSION and tag v$VERSION pushed!" 
