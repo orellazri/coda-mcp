@@ -15,7 +15,7 @@
     "build": "tsc && chmod 755 dist/index.js",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "test": "vitest run",
+    "test": "vitest run --coverage",
     "test:watch": "vitest",
     "openapi-ts": "openapi-ts",
     "inspect": "pnpm dlx @modelcontextprotocol/inspector dist/index.js"
@@ -30,6 +30,7 @@
     "@eslint/js": "^9.26.0",
     "@hey-api/openapi-ts": "^0.67.3",
     "@types/node": "^22.15.17",
+    "@vitest/coverage-v8": "3.1.4",
     "eslint": "^9.26.0",
     "globals": "^16.1.0",
     "mcp-testing-kit": "^0.2.0",
