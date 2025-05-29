@@ -16,7 +16,7 @@ export const server = new McpServer({
 
 server.tool(
   "coda_list_documents",
-  "List available documents",
+  "List or search available documents",
   {
     query: z.string().optional().describe("The query to search for documents by - optional"),
   },
