@@ -58,10 +58,6 @@ This MCP server is also available with Docker, like so:
 }
 ```
 
-```bash
-npx -y coda-mcp@latest
-```
-
 ## Local Setup
 
 1.  **Prerequisites:**
