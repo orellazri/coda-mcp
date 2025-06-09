@@ -95,7 +95,7 @@ server.tool(
     try {
       const content = await getPageContent(docId, pageIdOrName);
 
-      if (!content) {
+      if (content === undefined) {
         throw new Error("Unknown error has occurred");
       }
 

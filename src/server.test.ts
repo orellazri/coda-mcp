@@ -216,6 +216,22 @@ describe("coda_get_page_content", () => {
     expect(helpers.getPageContent).toHaveBeenCalledWith("doc-123", "page-456");
   });
 
+  it("should handle empty page content", async () => {
+    vi.mocked(helpers.getPageContent).mockResolvedValue("");
+
+    const client = await connect(mcpServer.server);
+    const result = await client.callTool("coda_get_page_content", {
+      docId: "doc-123",
+      pageIdOrName: "page-456",
+    });
+    expect(result.content).toEqual([
+      {
+        type: "text",
+        text: "",
+      },
+    ]);
+  });
+
   it("should show error if getPageContent returns undefined", async () => {
     vi.mocked(helpers.getPageContent).mockResolvedValue(undefined as any);
 
