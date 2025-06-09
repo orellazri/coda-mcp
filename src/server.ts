@@ -60,13 +60,15 @@ server.tool(
     docId: z.string().describe("The ID of the document to create the page in"),
     name: z.string().describe("The name of the page to create"),
     content: z.string().optional().describe("The markdown content of the page to create - optional"),
+    parentPageId: z.string().optional().describe("The ID of the parent page to create this page under - optional"),
   },
-  async ({ docId, name, content }): Promise<CallToolResult> => {
+  async ({ docId, name, content, parentPageId }): Promise<CallToolResult> => {
     try {
       const resp = await createPage({
         path: { docId },
         body: {
           name,
+          parentPageId: parentPageId ?? undefined,
           pageContent: {
             type: "canvas",
             canvasContent: { format: "markdown", content: content ?? " " },

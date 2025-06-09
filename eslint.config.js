@@ -10,4 +10,9 @@ export default defineConfig([
   {
     ignores: ["dist", "src/api/openapi.ts"],
   },
+  {
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+    },
+  },
 ]);

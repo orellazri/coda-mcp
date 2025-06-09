@@ -170,7 +170,7 @@ describe("coda_create_page", () => {
     } as any);
 
     const client = await connect(mcpServer.server);
-    const result = await client.callTool("coda_create_page", {
+    await client.callTool("coda_create_page", {
       docId: "doc-123",
       name: "Empty Page",
     });
@@ -181,6 +181,41 @@ describe("coda_create_page", () => {
         pageContent: {
           type: "canvas",
           canvasContent: { format: "markdown", content: " " },
+        },
+      },
+      throwOnError: true,
+    });
+  });
+
+  it("should create page with parent page id and content", async () => {
+    vi.mocked(sdk.createPage).mockResolvedValue({
+      data: {
+        id: "page-sub",
+        requestId: "req-125",
+      },
+    } as any);
+
+    const client = await connect(mcpServer.server);
+    const result = await client.callTool("coda_create_page", {
+      docId: "doc-123",
+      name: "Subpage",
+      parentPageId: "page-456",
+      content: "## Subheading",
+    });
+    expect(result.content).toEqual([
+      {
+        type: "text",
+        text: JSON.stringify({ id: "page-sub", requestId: "req-125" }),
+      },
+    ]);
+    expect(sdk.createPage).toHaveBeenCalledWith({
+      path: { docId: "doc-123" },
+      body: {
+        name: "Subpage",
+        parentPageId: "page-456",
+        pageContent: {
+          type: "canvas",
+          canvasContent: { format: "markdown", content: "## Subheading" },
         },
       },
       throwOnError: true,
@@ -260,9 +295,7 @@ describe("coda_get_page_content", () => {
 
 describe("coda_peek_page", () => {
   it("should peek page content successfully", async () => {
-    vi.mocked(helpers.getPageContent).mockResolvedValue(
-      "# Title\nLine 1\nLine 2\nLine 3",
-    );
+    vi.mocked(helpers.getPageContent).mockResolvedValue("# Title\nLine 1\nLine 2\nLine 3");
 
     const client = await connect(mcpServer.server);
     const result = await client.callTool("coda_peek_page", {
@@ -288,9 +321,7 @@ describe("coda_peek_page", () => {
       pageIdOrName: "page-456",
       numLines: 1,
     });
-    expect(result.content).toEqual([
-      { type: "text", text: "Failed to peek page: Error: Unknown error has occurred" },
-    ]);
+    expect(result.content).toEqual([{ type: "text", text: "Failed to peek page: Error: Unknown error has occurred" }]);
   });
 
   it("should show error if getPageContent throws", async () => {
@@ -302,9 +333,7 @@ describe("coda_peek_page", () => {
       pageIdOrName: "page-456",
       numLines: 3,
     });
-    expect(result.content).toEqual([
-      { type: "text", text: "Failed to peek page: Error: Export failed" },
-    ]);
+    expect(result.content).toEqual([{ type: "text", text: "Failed to peek page: Error: Export failed" }]);
   });
 });
 
