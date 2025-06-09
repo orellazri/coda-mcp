@@ -1,6 +1,6 @@
 {
   "name": "coda-mcp",
-  "version": "1.2.3",
+  "version": "1.3.0",
   "description": "MCP Server for Coda",
   "repository": {
     "url": "https://github.com/orellazri/coda-mcp"
