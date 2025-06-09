@@ -107,6 +107,38 @@ server.tool(
 );
 
 server.tool(
+  "coda_peek_page",
+  "Peek into the beginning of a page and return a limited number of lines",
+  {
+    docId: z.string().describe("The ID of the document that contains the page to peek into"),
+    pageIdOrName: z.string().describe("The ID or name of the page to peek into"),
+    numLines: z
+      .number()
+      .int()
+      .positive()
+      .describe("The number of lines to return from the start of the page - usually 30 lines is enough"),
+  },
+  async ({ docId, pageIdOrName, numLines }): Promise<CallToolResult> => {
+    try {
+      const content = await getPageContent(docId, pageIdOrName);
+
+      if (!content) {
+        throw new Error("Unknown error has occurred");
+      }
+
+      const preview = content.split(/\r?\n/).slice(0, numLines).join("\n");
+
+      return { content: [{ type: "text", text: preview }] };
+    } catch (error) {
+      return {
+        content: [{ type: "text", text: `Failed to peek page: ${error}` }],
+        isError: true,
+      };
+    }
+  },
+);
+
+server.tool(
   "coda_replace_page_content",
   "Replace the content of a page with new markdown content",
   {

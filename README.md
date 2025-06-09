@@ -18,6 +18,7 @@ The server exposes the following tools to the MCP client:
 - **`coda_append_page_content`**: Appends new markdown content to the end of a specified page.
 - **`coda_duplicate_page`**: Creates a copy of an existing page with a new name.
 - **`coda_rename_page`**: Renames an existing page.
+- **`coda_peek_page`**: Peek into the beginning of a page and return a limited number of lines.
 
 ## Usage
 
