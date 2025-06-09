@@ -22,6 +22,7 @@ describe("MCP Server", () => {
       expect.objectContaining({ name: "coda_list_pages" }),
       expect.objectContaining({ name: "coda_create_page" }),
       expect.objectContaining({ name: "coda_get_page_content" }),
+      expect.objectContaining({ name: "coda_peek_page" }),
       expect.objectContaining({ name: "coda_replace_page_content" }),
       expect.objectContaining({ name: "coda_append_page_content" }),
       expect.objectContaining({ name: "coda_duplicate_page" }),
@@ -254,6 +255,56 @@ describe("coda_get_page_content", () => {
       pageIdOrName: "page-456",
     });
     expect(result.content).toEqual([{ type: "text", text: "Failed to get page content: Error: Export failed" }]);
+  });
+});
+
+describe("coda_peek_page", () => {
+  it("should peek page content successfully", async () => {
+    vi.mocked(helpers.getPageContent).mockResolvedValue(
+      "# Title\nLine 1\nLine 2\nLine 3",
+    );
+
+    const client = await connect(mcpServer.server);
+    const result = await client.callTool("coda_peek_page", {
+      docId: "doc-123",
+      pageIdOrName: "page-456",
+      numLines: 2,
+    });
+    expect(result.content).toEqual([
+      {
+        type: "text",
+        text: "# Title\nLine 1",
+      },
+    ]);
+    expect(helpers.getPageContent).toHaveBeenCalledWith("doc-123", "page-456");
+  });
+
+  it("should show error if getPageContent returns undefined", async () => {
+    vi.mocked(helpers.getPageContent).mockResolvedValue(undefined as any);
+
+    const client = await connect(mcpServer.server);
+    const result = await client.callTool("coda_peek_page", {
+      docId: "doc-123",
+      pageIdOrName: "page-456",
+      numLines: 1,
+    });
+    expect(result.content).toEqual([
+      { type: "text", text: "Failed to peek page: Error: Unknown error has occurred" },
+    ]);
+  });
+
+  it("should show error if getPageContent throws", async () => {
+    vi.mocked(helpers.getPageContent).mockRejectedValue(new Error("Export failed"));
+
+    const client = await connect(mcpServer.server);
+    const result = await client.callTool("coda_peek_page", {
+      docId: "doc-123",
+      pageIdOrName: "page-456",
+      numLines: 3,
+    });
+    expect(result.content).toEqual([
+      { type: "text", text: "Failed to peek page: Error: Export failed" },
+    ]);
   });
 });
 
