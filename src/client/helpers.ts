@@ -31,6 +31,9 @@ export async function getPageContent(docId: string, pageIdOrName: string) {
   let downloadLink: string | undefined;
 
   while (retries < maxRetries) {
+    // Wait for 5 seconds
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+
     try {
       const exportStatusResp = await getPageContentExportStatus({
         path: {
@@ -53,9 +56,6 @@ export async function getPageContent(docId: string, pageIdOrName: string) {
     if (retries >= maxRetries) {
       throw new Error(`Page content export did not complete after ${maxRetries} retries.`);
     }
-
-    // Wait for 5 seconds before polling again
-    await new Promise((resolve) => setTimeout(resolve, 5000));
   }
 
   if (!downloadLink) {
