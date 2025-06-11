@@ -11,7 +11,7 @@ This project implements a Model Context Protocol (MCP) server that acts as a bri
 The server exposes the following tools to the MCP client:
 
 - **`coda_list_documents`**: Lists all documents available to the user.
-- **`coda_list_pages`**: Lists all pages within the configured Coda document.
+- **`coda_list_pages`**: Lists all pages within the configured Coda document with pagination support.
 - **`coda_create_page`**: Creates a new page in the document, optionally under a specified parent page (creating a subpage) and populating it with initial markdown content.
 - **`coda_get_page_content`**: Retrieves the content of a specified page (by ID or name) as markdown.
 - **`coda_replace_page_content`**: Replaces the content of a specified page with new markdown content.

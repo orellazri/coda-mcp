@@ -86,7 +86,7 @@ describe("coda_list_documents", () => {
 });
 
 describe("coda_list_pages", () => {
-  it("should list pages successfully", async () => {
+  it("should list pages successfully without limit or nextPageToken", async () => {
     vi.mocked(sdk.listPages).mockResolvedValue({
       data: {
         items: [
@@ -111,6 +111,101 @@ describe("coda_list_pages", () => {
     ]);
     expect(sdk.listPages).toHaveBeenCalledWith({
       path: { docId: "doc-123" },
+      query: { limit: undefined, pageToken: undefined },
+      throwOnError: true,
+    });
+  });
+
+  it("should list pages with limit", async () => {
+    vi.mocked(sdk.listPages).mockResolvedValue({
+      data: {
+        items: [
+          { id: "page-123", name: "Test Page 1" },
+          { id: "page-456", name: "Test Page 2" },
+        ],
+        nextPageToken: "token-123",
+      },
+    } as any);
+
+    const client = await connect(mcpServer.server);
+    const result = await client.callTool("coda_list_pages", { docId: "doc-123", limit: 10 });
+    expect(result.content).toEqual([
+      {
+        type: "text",
+        text: JSON.stringify({
+          items: [
+            { id: "page-123", name: "Test Page 1" },
+            { id: "page-456", name: "Test Page 2" },
+          ],
+          nextPageToken: "token-123",
+        }),
+      },
+    ]);
+    expect(sdk.listPages).toHaveBeenCalledWith({
+      path: { docId: "doc-123" },
+      query: { limit: 10, pageToken: undefined },
+      throwOnError: true,
+    });
+  });
+
+  it("should list pages with nextPageToken", async () => {
+    vi.mocked(sdk.listPages).mockResolvedValue({
+      data: {
+        items: [
+          { id: "page-789", name: "Test Page 3" },
+          { id: "page-101", name: "Test Page 4" },
+        ],
+      },
+    } as any);
+
+    const client = await connect(mcpServer.server);
+    const result = await client.callTool("coda_list_pages", {
+      docId: "doc-123",
+      nextPageToken: "token-123",
+    });
+    expect(result.content).toEqual([
+      {
+        type: "text",
+        text: JSON.stringify({
+          items: [
+            { id: "page-789", name: "Test Page 3" },
+            { id: "page-101", name: "Test Page 4" },
+          ],
+        }),
+      },
+    ]);
+    expect(sdk.listPages).toHaveBeenCalledWith({
+      path: { docId: "doc-123" },
+      query: { limit: undefined, pageToken: "token-123" },
+      throwOnError: true,
+    });
+  });
+
+  it("should prioritize nextPageToken over limit", async () => {
+    vi.mocked(sdk.listPages).mockResolvedValue({
+      data: {
+        items: [{ id: "page-789", name: "Test Page 3" }],
+      },
+    } as any);
+
+    const client = await connect(mcpServer.server);
+    const result = await client.callTool("coda_list_pages", {
+      docId: "doc-123",
+      limit: 5,
+      nextPageToken: "token-123",
+    });
+    expect(result.content).toEqual([
+      {
+        type: "text",
+        text: JSON.stringify({
+          items: [{ id: "page-789", name: "Test Page 3" }],
+        }),
+      },
+    ]);
+    // When nextPageToken is provided, limit should be undefined
+    expect(sdk.listPages).toHaveBeenCalledWith({
+      path: { docId: "doc-123" },
+      query: { limit: undefined, pageToken: "token-123" },
       throwOnError: true,
     });
   });

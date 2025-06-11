@@ -33,13 +33,26 @@ server.tool(
 
 server.tool(
   "coda_list_pages",
-  "List pages in the current document",
+  "List pages in the current document with pagination",
   {
     docId: z.string().describe("The ID of the document to list pages from"),
+    limit: z.number().int().positive().optional().describe("The number of pages to return - optional, defaults to 25"),
+    nextPageToken: z
+      .string()
+      .optional()
+      .describe(
+        "The token need to get the next page of results, returned from a previous call to this tool - optional",
+      ),
   },
-  async ({ docId }): Promise<CallToolResult> => {
+  async ({ docId, limit, nextPageToken }): Promise<CallToolResult> => {
     try {
-      const resp = await listPages({ path: { docId }, throwOnError: true });
+      const listLimit = nextPageToken ? undefined : limit;
+
+      const resp = await listPages({
+        path: { docId },
+        query: { limit: listLimit, pageToken: nextPageToken ?? undefined },
+        throwOnError: true,
+      });
 
       return {
         content: [{ type: "text", text: JSON.stringify(resp.data) }],
