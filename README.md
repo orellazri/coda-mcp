@@ -2,10 +2,6 @@
 
 This project implements a Model Context Protocol (MCP) server that acts as a bridge to interact with the [Coda](https://coda.io/) API. It allows an MCP client (like an AI assistant) to perform actions on Coda pages, such as listing, creating, reading, updating, duplicating, and renaming.
 
-<a href="https://glama.ai/mcp/servers/@orellazri/coda-mcp">
-  <img width="380" height="200" src="https://glama.ai/mcp/servers/@orellazri/coda-mcp/badge" alt="Coda Server MCP server" />
-</a>
-
 ## Features
 
 The server exposes the following tools to the MCP client:
