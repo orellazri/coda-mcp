@@ -27,6 +27,7 @@ describe("MCP Server", () => {
       expect.objectContaining({ name: "coda_append_page_content" }),
       expect.objectContaining({ name: "coda_duplicate_page" }),
       expect.objectContaining({ name: "coda_rename_page" }),
+      expect.objectContaining({ name: "coda_resolve_link" }),
     ]);
   });
 });
@@ -638,5 +639,174 @@ describe("coda_rename_page", () => {
       newName: "Renamed Page",
     });
     expect(result.content).toEqual([{ type: "text", text: "Failed to rename page: Error: Rename failed" }]);
+  });
+});
+
+describe("coda_resolve_link", () => {
+  it("should resolve browser link successfully", async () => {
+    vi.mocked(sdk.resolveBrowserLink).mockResolvedValue({
+      data: {
+        resource: {
+          id: "doc-123",
+          type: "doc",
+          name: "Test Document",
+          href: "https://coda.io/d/doc-123",
+        },
+        browserLink: "https://coda.io/d/doc-123/Test-Page_ptest123",
+      },
+    } as any);
+
+    const client = await connect(mcpServer.server);
+    const result = await client.callTool("coda_resolve_link", {
+      url: "https://coda.io/d/doc-123/Test-Page_ptest123",
+    });
+    expect(result.content).toEqual([
+      {
+        type: "text",
+        text: JSON.stringify({
+          resource: {
+            id: "doc-123",
+            type: "doc",
+            name: "Test Document",
+            href: "https://coda.io/d/doc-123",
+          },
+          browserLink: "https://coda.io/d/doc-123/Test-Page_ptest123",
+        }),
+      },
+    ]);
+    expect(sdk.resolveBrowserLink).toHaveBeenCalledWith({
+      query: { url: "https://coda.io/d/doc-123/Test-Page_ptest123" },
+      throwOnError: true,
+    });
+  });
+
+  it("should resolve page link successfully", async () => {
+    vi.mocked(sdk.resolveBrowserLink).mockResolvedValue({
+      data: {
+        resource: {
+          id: "page-456",
+          type: "page",
+          name: "Test Page",
+          href: "https://coda.io/d/doc-123/Test-Page_ptest456",
+        },
+        browserLink: "https://coda.io/d/doc-123/Test-Page_ptest456",
+      },
+    } as any);
+
+    const client = await connect(mcpServer.server);
+    const result = await client.callTool("coda_resolve_link", {
+      url: "https://coda.io/d/doc-123/Test-Page_ptest456",
+    });
+    expect(result.content).toEqual([
+      {
+        type: "text",
+        text: JSON.stringify({
+          resource: {
+            id: "page-456",
+            type: "page",
+            name: "Test Page",
+            href: "https://coda.io/d/doc-123/Test-Page_ptest456",
+          },
+          browserLink: "https://coda.io/d/doc-123/Test-Page_ptest456",
+        }),
+      },
+    ]);
+    expect(sdk.resolveBrowserLink).toHaveBeenCalledWith({
+      query: { url: "https://coda.io/d/doc-123/Test-Page_ptest456" },
+      throwOnError: true,
+    });
+  });
+
+  it("should resolve table link successfully", async () => {
+    vi.mocked(sdk.resolveBrowserLink).mockResolvedValue({
+      data: {
+        resource: {
+          id: "table-789",
+          type: "table",
+          name: "Test Table",
+          href: "https://coda.io/d/doc-123/Test-Table_ttable789",
+        },
+        browserLink: "https://coda.io/d/doc-123/Test-Table_ttable789",
+      },
+    } as any);
+
+    const client = await connect(mcpServer.server);
+    const result = await client.callTool("coda_resolve_link", {
+      url: "https://coda.io/d/doc-123/Test-Table_ttable789",
+    });
+    expect(result.content).toEqual([
+      {
+        type: "text",
+        text: JSON.stringify({
+          resource: {
+            id: "table-789",
+            type: "table",
+            name: "Test Table",
+            href: "https://coda.io/d/doc-123/Test-Table_ttable789",
+          },
+          browserLink: "https://coda.io/d/doc-123/Test-Table_ttable789",
+        }),
+      },
+    ]);
+  });
+
+  it("should handle empty URL parameter", async () => {
+    vi.mocked(sdk.resolveBrowserLink).mockResolvedValue({
+      data: {
+        resource: null,
+        browserLink: "",
+      },
+    } as any);
+
+    const client = await connect(mcpServer.server);
+    const result = await client.callTool("coda_resolve_link", {
+      url: "",
+    });
+    expect(result.content).toEqual([
+      {
+        type: "text",
+        text: JSON.stringify({
+          resource: null,
+          browserLink: "",
+        }),
+      },
+    ]);
+    expect(sdk.resolveBrowserLink).toHaveBeenCalledWith({
+      query: { url: "" },
+      throwOnError: true,
+    });
+  });
+
+  it("should show error if resolve link throws due to invalid URL", async () => {
+    vi.mocked(sdk.resolveBrowserLink).mockRejectedValue(new Error("Invalid URL format"));
+
+    const client = await connect(mcpServer.server);
+    const result = await client.callTool("coda_resolve_link", {
+      url: "not-a-valid-url",
+    });
+    expect(result.content).toEqual([{ type: "text", text: "Failed to resolve link: Error: Invalid URL format" }]);
+    expect(result.isError).toBe(true);
+  });
+
+  it("should show error if resolve link throws due to access denied", async () => {
+    vi.mocked(sdk.resolveBrowserLink).mockRejectedValue(new Error("Access denied"));
+
+    const client = await connect(mcpServer.server);
+    const result = await client.callTool("coda_resolve_link", {
+      url: "https://coda.io/d/private-doc-123",
+    });
+    expect(result.content).toEqual([{ type: "text", text: "Failed to resolve link: Error: Access denied" }]);
+    expect(result.isError).toBe(true);
+  });
+
+  it("should show error if resolve link throws due to not found", async () => {
+    vi.mocked(sdk.resolveBrowserLink).mockRejectedValue(new Error("Resource not found"));
+
+    const client = await connect(mcpServer.server);
+    const result = await client.callTool("coda_resolve_link", {
+      url: "https://coda.io/d/nonexistent-doc-456",
+    });
+    expect(result.content).toEqual([{ type: "text", text: "Failed to resolve link: Error: Resource not found" }]);
+    expect(result.isError).toBe(true);
   });
 });
