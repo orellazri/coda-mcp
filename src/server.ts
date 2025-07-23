@@ -3,7 +3,7 @@ import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import z from "zod";
 import packageJson from "../package.json";
 import { getPageContent } from "./client/helpers";
-import { createPage, listDocs, listPages, updatePage } from "./client/sdk.gen";
+import { createPage, listDocs, listPages, resolveBrowserLink, updatePage } from "./client/sdk.gen";
 
 export const server = new McpServer({
   name: "coda",
@@ -265,6 +265,26 @@ server.tool(
       return { content: [{ type: "text", text: JSON.stringify(resp.data) }] };
     } catch (error) {
       return { content: [{ type: "text", text: `Failed to rename page: ${error}` }], isError: true };
+    }
+  },
+);
+
+server.tool(
+  "coda_resolve_link",
+  "Resolve metadata given a browser link to a Coda object",
+  {
+    url: z.string().describe("The URL to resolve"),
+  },
+  async ({ url }): Promise<CallToolResult> => {
+    try {
+      const resp = await resolveBrowserLink({
+        query: { url },
+        throwOnError: true,
+      });
+
+      return { content: [{ type: "text", text: JSON.stringify(resp.data) }] };
+    } catch (error) {
+      return { content: [{ type: "text", text: `Failed to resolve link: ${error}` }], isError: true };
     }
   },
 );
