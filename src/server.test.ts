@@ -28,6 +28,15 @@ describe("MCP Server", () => {
       expect.objectContaining({ name: "coda_duplicate_page" }),
       expect.objectContaining({ name: "coda_rename_page" }),
       expect.objectContaining({ name: "coda_resolve_link" }),
+      expect.objectContaining({ name: "coda_list_tables" }),
+      expect.objectContaining({ name: "coda_list_columns" }),
+      expect.objectContaining({ name: "coda_list_rows" }),
+      expect.objectContaining({ name: "coda_get_row" }),
+      expect.objectContaining({ name: "coda_upsert_rows" }),
+      expect.objectContaining({ name: "coda_update_row" }),
+      expect.objectContaining({ name: "coda_delete_row" }),
+      expect.objectContaining({ name: "coda_delete_rows" }),
+      expect.objectContaining({ name: "coda_push_button" }),
     ]);
   });
 });
@@ -808,5 +817,522 @@ describe("coda_resolve_link", () => {
     });
     expect(result.content).toEqual([{ type: "text", text: "Failed to resolve link: Error: Resource not found" }]);
     expect(result.isError).toBe(true);
+  });
+});
+
+describe("coda_list_tables", () => {
+  it("should list tables successfully", async () => {
+    vi.mocked(sdk.listTables).mockResolvedValue({
+      data: {
+        items: [
+          { id: "grid-123", name: "Tasks" },
+          { id: "grid-456", name: "People" },
+        ],
+      },
+    } as any);
+
+    const client = await connect(mcpServer.server);
+    const result = await client.callTool("coda_list_tables", { docId: "doc-123" });
+    expect(result.content).toEqual([
+      {
+        type: "text",
+        text: JSON.stringify({
+          items: [
+            { id: "grid-123", name: "Tasks" },
+            { id: "grid-456", name: "People" },
+          ],
+        }),
+      },
+    ]);
+    expect(sdk.listTables).toHaveBeenCalledWith({
+      path: { docId: "doc-123" },
+      query: { limit: undefined, pageToken: undefined },
+      throwOnError: true,
+    });
+  });
+
+  it("should list tables with limit", async () => {
+    vi.mocked(sdk.listTables).mockResolvedValue({
+      data: { items: [{ id: "grid-123", name: "Tasks" }], nextPageToken: "token-abc" },
+    } as any);
+
+    const client = await connect(mcpServer.server);
+    await client.callTool("coda_list_tables", { docId: "doc-123", limit: 1 });
+    expect(sdk.listTables).toHaveBeenCalledWith({
+      path: { docId: "doc-123" },
+      query: { limit: 1, pageToken: undefined },
+      throwOnError: true,
+    });
+  });
+
+  it("should prioritize nextPageToken over limit", async () => {
+    vi.mocked(sdk.listTables).mockResolvedValue({
+      data: { items: [] },
+    } as any);
+
+    const client = await connect(mcpServer.server);
+    await client.callTool("coda_list_tables", { docId: "doc-123", limit: 5, nextPageToken: "token-abc" });
+    expect(sdk.listTables).toHaveBeenCalledWith({
+      path: { docId: "doc-123" },
+      query: { limit: undefined, pageToken: "token-abc" },
+      throwOnError: true,
+    });
+  });
+
+  it("should show error if list tables throws", async () => {
+    vi.mocked(sdk.listTables).mockRejectedValue(new Error("Access denied"));
+
+    const client = await connect(mcpServer.server);
+    const result = await client.callTool("coda_list_tables", { docId: "doc-123" });
+    expect(result.content).toEqual([{ type: "text", text: "Failed to list tables: Error: Access denied" }]);
+  });
+});
+
+describe("coda_list_columns", () => {
+  it("should list columns successfully", async () => {
+    vi.mocked(sdk.listColumns).mockResolvedValue({
+      data: {
+        items: [
+          { id: "c-abc", name: "Name" },
+          { id: "c-def", name: "Age" },
+        ],
+      },
+    } as any);
+
+    const client = await connect(mcpServer.server);
+    const result = await client.callTool("coda_list_columns", { docId: "doc-123", tableIdOrName: "grid-123" });
+    expect(result.content).toEqual([
+      {
+        type: "text",
+        text: JSON.stringify({
+          items: [
+            { id: "c-abc", name: "Name" },
+            { id: "c-def", name: "Age" },
+          ],
+        }),
+      },
+    ]);
+    expect(sdk.listColumns).toHaveBeenCalledWith({
+      path: { docId: "doc-123", tableIdOrName: "grid-123" },
+      query: { limit: undefined, pageToken: undefined },
+      throwOnError: true,
+    });
+  });
+
+  it("should prioritize nextPageToken over limit", async () => {
+    vi.mocked(sdk.listColumns).mockResolvedValue({ data: { items: [] } } as any);
+
+    const client = await connect(mcpServer.server);
+    await client.callTool("coda_list_columns", {
+      docId: "doc-123",
+      tableIdOrName: "grid-123",
+      limit: 10,
+      nextPageToken: "token-abc",
+    });
+    expect(sdk.listColumns).toHaveBeenCalledWith({
+      path: { docId: "doc-123", tableIdOrName: "grid-123" },
+      query: { limit: undefined, pageToken: "token-abc" },
+      throwOnError: true,
+    });
+  });
+
+  it("should show error if list columns throws", async () => {
+    vi.mocked(sdk.listColumns).mockRejectedValue(new Error("Not found"));
+
+    const client = await connect(mcpServer.server);
+    const result = await client.callTool("coda_list_columns", { docId: "doc-123", tableIdOrName: "grid-123" });
+    expect(result.content).toEqual([{ type: "text", text: "Failed to list columns: Error: Not found" }]);
+  });
+});
+
+describe("coda_list_rows", () => {
+  it("should list rows with useColumnNames defaulting to true", async () => {
+    vi.mocked(sdk.listRows).mockResolvedValue({
+      data: {
+        items: [{ id: "i-row1", name: "Row 1", values: { Name: "Alice", Age: 30 } }],
+      },
+    } as any);
+
+    const client = await connect(mcpServer.server);
+    const result = await client.callTool("coda_list_rows", { docId: "doc-123", tableIdOrName: "grid-123" });
+    expect(result.content).toEqual([
+      {
+        type: "text",
+        text: JSON.stringify({
+          items: [{ id: "i-row1", name: "Row 1", values: { Name: "Alice", Age: 30 } }],
+        }),
+      },
+    ]);
+    expect(sdk.listRows).toHaveBeenCalledWith({
+      path: { docId: "doc-123", tableIdOrName: "grid-123" },
+      query: {
+        query: undefined,
+        sortBy: undefined,
+        useColumnNames: true,
+        limit: undefined,
+        pageToken: undefined,
+      },
+      throwOnError: true,
+    });
+  });
+
+  it("should list rows with query and sortBy", async () => {
+    vi.mocked(sdk.listRows).mockResolvedValue({ data: { items: [] } } as any);
+
+    const client = await connect(mcpServer.server);
+    await client.callTool("coda_list_rows", {
+      docId: "doc-123",
+      tableIdOrName: "grid-123",
+      query: '"Name":"Alice"',
+      sortBy: "updatedAt",
+    });
+    expect(sdk.listRows).toHaveBeenCalledWith({
+      path: { docId: "doc-123", tableIdOrName: "grid-123" },
+      query: {
+        query: '"Name":"Alice"',
+        sortBy: "updatedAt",
+        useColumnNames: true,
+        limit: undefined,
+        pageToken: undefined,
+      },
+      throwOnError: true,
+    });
+  });
+
+  it("should prioritize nextPageToken over limit", async () => {
+    vi.mocked(sdk.listRows).mockResolvedValue({ data: { items: [] } } as any);
+
+    const client = await connect(mcpServer.server);
+    await client.callTool("coda_list_rows", {
+      docId: "doc-123",
+      tableIdOrName: "grid-123",
+      limit: 5,
+      nextPageToken: "token-abc",
+    });
+    expect(sdk.listRows).toHaveBeenCalledWith({
+      path: { docId: "doc-123", tableIdOrName: "grid-123" },
+      query: {
+        query: undefined,
+        sortBy: undefined,
+        useColumnNames: true,
+        limit: undefined,
+        pageToken: "token-abc",
+      },
+      throwOnError: true,
+    });
+  });
+
+  it("should show error if list rows throws", async () => {
+    vi.mocked(sdk.listRows).mockRejectedValue(new Error("Bad request"));
+
+    const client = await connect(mcpServer.server);
+    const result = await client.callTool("coda_list_rows", { docId: "doc-123", tableIdOrName: "grid-123" });
+    expect(result.content).toEqual([{ type: "text", text: "Failed to list rows: Error: Bad request" }]);
+  });
+});
+
+describe("coda_get_row", () => {
+  it("should get a row with useColumnNames defaulting to true", async () => {
+    vi.mocked(sdk.getRow).mockResolvedValue({
+      data: { id: "i-row1", name: "Row 1", values: { Name: "Alice", Age: 30 } },
+    } as any);
+
+    const client = await connect(mcpServer.server);
+    const result = await client.callTool("coda_get_row", {
+      docId: "doc-123",
+      tableIdOrName: "grid-123",
+      rowIdOrName: "i-row1",
+    });
+    expect(result.content).toEqual([
+      {
+        type: "text",
+        text: JSON.stringify({ id: "i-row1", name: "Row 1", values: { Name: "Alice", Age: 30 } }),
+      },
+    ]);
+    expect(sdk.getRow).toHaveBeenCalledWith({
+      path: { docId: "doc-123", tableIdOrName: "grid-123", rowIdOrName: "i-row1" },
+      query: { useColumnNames: true },
+      throwOnError: true,
+    });
+  });
+
+  it("should get a row with useColumnNames set to false", async () => {
+    vi.mocked(sdk.getRow).mockResolvedValue({
+      data: { id: "i-row1", name: "Row 1", values: { "c-abc": "Alice" } },
+    } as any);
+
+    const client = await connect(mcpServer.server);
+    await client.callTool("coda_get_row", {
+      docId: "doc-123",
+      tableIdOrName: "grid-123",
+      rowIdOrName: "i-row1",
+      useColumnNames: false,
+    });
+    expect(sdk.getRow).toHaveBeenCalledWith({
+      path: { docId: "doc-123", tableIdOrName: "grid-123", rowIdOrName: "i-row1" },
+      query: { useColumnNames: false },
+      throwOnError: true,
+    });
+  });
+
+  it("should show error if get row throws", async () => {
+    vi.mocked(sdk.getRow).mockRejectedValue(new Error("Row not found"));
+
+    const client = await connect(mcpServer.server);
+    const result = await client.callTool("coda_get_row", {
+      docId: "doc-123",
+      tableIdOrName: "grid-123",
+      rowIdOrName: "i-row1",
+    });
+    expect(result.content).toEqual([{ type: "text", text: "Failed to get row: Error: Row not found" }]);
+  });
+});
+
+describe("coda_upsert_rows", () => {
+  it("should upsert rows successfully", async () => {
+    vi.mocked(sdk.upsertRows).mockResolvedValue({
+      data: { requestId: "req-200", addedRowIds: ["i-new1"] },
+    } as any);
+
+    const client = await connect(mcpServer.server);
+    const rows = JSON.stringify([{ cells: [{ column: "Name", value: "Alice" }] }]);
+    const result = await client.callTool("coda_upsert_rows", {
+      docId: "doc-123",
+      tableIdOrName: "grid-123",
+      rows,
+    });
+    expect(result.content).toEqual([
+      { type: "text", text: JSON.stringify({ requestId: "req-200", addedRowIds: ["i-new1"] }) },
+    ]);
+    expect(sdk.upsertRows).toHaveBeenCalledWith({
+      path: { docId: "doc-123", tableIdOrName: "grid-123" },
+      body: { rows: [{ cells: [{ column: "Name", value: "Alice" }] }], keyColumns: undefined },
+      throwOnError: true,
+    });
+  });
+
+  it("should upsert rows with keyColumns", async () => {
+    vi.mocked(sdk.upsertRows).mockResolvedValue({
+      data: { requestId: "req-201" },
+    } as any);
+
+    const client = await connect(mcpServer.server);
+    const rows = JSON.stringify([{ cells: [{ column: "Name", value: "Alice" }, { column: "Age", value: 31 }] }]);
+    const keyColumns = JSON.stringify(["Name"]);
+    await client.callTool("coda_upsert_rows", {
+      docId: "doc-123",
+      tableIdOrName: "grid-123",
+      rows,
+      keyColumns,
+    });
+    expect(sdk.upsertRows).toHaveBeenCalledWith({
+      path: { docId: "doc-123", tableIdOrName: "grid-123" },
+      body: {
+        rows: [{ cells: [{ column: "Name", value: "Alice" }, { column: "Age", value: 31 }] }],
+        keyColumns: ["Name"],
+      },
+      throwOnError: true,
+    });
+  });
+
+  it("should show error for invalid JSON rows", async () => {
+    const client = await connect(mcpServer.server);
+    const result = await client.callTool("coda_upsert_rows", {
+      docId: "doc-123",
+      tableIdOrName: "grid-123",
+      rows: "not-json",
+    });
+    expect(result.content).toEqual([
+      expect.objectContaining({ type: "text", text: expect.stringContaining("Failed to upsert rows:") }),
+    ]);
+    expect(result.isError).toBe(true);
+  });
+
+  it("should show error if upsert rows throws", async () => {
+    vi.mocked(sdk.upsertRows).mockRejectedValue(new Error("Bad request"));
+
+    const client = await connect(mcpServer.server);
+    const rows = JSON.stringify([{ cells: [{ column: "Name", value: "Alice" }] }]);
+    const result = await client.callTool("coda_upsert_rows", {
+      docId: "doc-123",
+      tableIdOrName: "grid-123",
+      rows,
+    });
+    expect(result.content).toEqual([{ type: "text", text: "Failed to upsert rows: Error: Bad request" }]);
+  });
+});
+
+describe("coda_update_row", () => {
+  it("should update row successfully", async () => {
+    vi.mocked(sdk.updateRow).mockResolvedValue({
+      data: { requestId: "req-300", id: "i-row1" },
+    } as any);
+
+    const client = await connect(mcpServer.server);
+    const cells = JSON.stringify([{ column: "Name", value: "Bob" }]);
+    const result = await client.callTool("coda_update_row", {
+      docId: "doc-123",
+      tableIdOrName: "grid-123",
+      rowIdOrName: "i-row1",
+      cells,
+    });
+    expect(result.content).toEqual([
+      { type: "text", text: JSON.stringify({ requestId: "req-300", id: "i-row1" }) },
+    ]);
+    expect(sdk.updateRow).toHaveBeenCalledWith({
+      path: { docId: "doc-123", tableIdOrName: "grid-123", rowIdOrName: "i-row1" },
+      body: { row: { cells: [{ column: "Name", value: "Bob" }] } },
+      throwOnError: true,
+    });
+  });
+
+  it("should show error for invalid JSON cells", async () => {
+    const client = await connect(mcpServer.server);
+    const result = await client.callTool("coda_update_row", {
+      docId: "doc-123",
+      tableIdOrName: "grid-123",
+      rowIdOrName: "i-row1",
+      cells: "bad-json",
+    });
+    expect(result.content).toEqual([
+      expect.objectContaining({ type: "text", text: expect.stringContaining("Failed to update row:") }),
+    ]);
+    expect(result.isError).toBe(true);
+  });
+
+  it("should show error if update row throws", async () => {
+    vi.mocked(sdk.updateRow).mockRejectedValue(new Error("Update failed"));
+
+    const client = await connect(mcpServer.server);
+    const cells = JSON.stringify([{ column: "Name", value: "Bob" }]);
+    const result = await client.callTool("coda_update_row", {
+      docId: "doc-123",
+      tableIdOrName: "grid-123",
+      rowIdOrName: "i-row1",
+      cells,
+    });
+    expect(result.content).toEqual([{ type: "text", text: "Failed to update row: Error: Update failed" }]);
+  });
+});
+
+describe("coda_delete_row", () => {
+  it("should delete row successfully", async () => {
+    vi.mocked(sdk.deleteRow).mockResolvedValue({
+      data: { requestId: "req-400", id: "i-row1" },
+    } as any);
+
+    const client = await connect(mcpServer.server);
+    const result = await client.callTool("coda_delete_row", {
+      docId: "doc-123",
+      tableIdOrName: "grid-123",
+      rowIdOrName: "i-row1",
+    });
+    expect(result.content).toEqual([
+      { type: "text", text: JSON.stringify({ requestId: "req-400", id: "i-row1" }) },
+    ]);
+    expect(sdk.deleteRow).toHaveBeenCalledWith({
+      path: { docId: "doc-123", tableIdOrName: "grid-123", rowIdOrName: "i-row1" },
+      throwOnError: true,
+    });
+  });
+
+  it("should show error if delete row throws", async () => {
+    vi.mocked(sdk.deleteRow).mockRejectedValue(new Error("Not found"));
+
+    const client = await connect(mcpServer.server);
+    const result = await client.callTool("coda_delete_row", {
+      docId: "doc-123",
+      tableIdOrName: "grid-123",
+      rowIdOrName: "i-row1",
+    });
+    expect(result.content).toEqual([{ type: "text", text: "Failed to delete row: Error: Not found" }]);
+  });
+});
+
+describe("coda_delete_rows", () => {
+  it("should delete multiple rows successfully", async () => {
+    vi.mocked(sdk.deleteRows).mockResolvedValue({
+      data: { requestId: "req-500", rowIds: ["i-row1", "i-row2"] },
+    } as any);
+
+    const client = await connect(mcpServer.server);
+    const rowIds = JSON.stringify(["i-row1", "i-row2"]);
+    const result = await client.callTool("coda_delete_rows", {
+      docId: "doc-123",
+      tableIdOrName: "grid-123",
+      rowIds,
+    });
+    expect(result.content).toEqual([
+      { type: "text", text: JSON.stringify({ requestId: "req-500", rowIds: ["i-row1", "i-row2"] }) },
+    ]);
+    expect(sdk.deleteRows).toHaveBeenCalledWith({
+      path: { docId: "doc-123", tableIdOrName: "grid-123" },
+      body: { rowIds: ["i-row1", "i-row2"] },
+      throwOnError: true,
+    });
+  });
+
+  it("should show error for invalid JSON rowIds", async () => {
+    const client = await connect(mcpServer.server);
+    const result = await client.callTool("coda_delete_rows", {
+      docId: "doc-123",
+      tableIdOrName: "grid-123",
+      rowIds: "not-json",
+    });
+    expect(result.content).toEqual([
+      expect.objectContaining({ type: "text", text: expect.stringContaining("Failed to delete rows:") }),
+    ]);
+    expect(result.isError).toBe(true);
+  });
+
+  it("should show error if delete rows throws", async () => {
+    vi.mocked(sdk.deleteRows).mockRejectedValue(new Error("Bad request"));
+
+    const client = await connect(mcpServer.server);
+    const rowIds = JSON.stringify(["i-row1"]);
+    const result = await client.callTool("coda_delete_rows", {
+      docId: "doc-123",
+      tableIdOrName: "grid-123",
+      rowIds,
+    });
+    expect(result.content).toEqual([{ type: "text", text: "Failed to delete rows: Error: Bad request" }]);
+  });
+});
+
+describe("coda_push_button", () => {
+  it("should push button successfully", async () => {
+    vi.mocked(sdk.pushButton).mockResolvedValue({
+      data: { requestId: "req-600", rowId: "i-row1", columnId: "c-btn" },
+    } as any);
+
+    const client = await connect(mcpServer.server);
+    const result = await client.callTool("coda_push_button", {
+      docId: "doc-123",
+      tableIdOrName: "grid-123",
+      rowIdOrName: "i-row1",
+      columnIdOrName: "c-btn",
+    });
+    expect(result.content).toEqual([
+      { type: "text", text: JSON.stringify({ requestId: "req-600", rowId: "i-row1", columnId: "c-btn" }) },
+    ]);
+    expect(sdk.pushButton).toHaveBeenCalledWith({
+      path: { docId: "doc-123", tableIdOrName: "grid-123", rowIdOrName: "i-row1", columnIdOrName: "c-btn" },
+      throwOnError: true,
+    });
+  });
+
+  it("should show error if push button throws", async () => {
+    vi.mocked(sdk.pushButton).mockRejectedValue(new Error("Column is not a button"));
+
+    const client = await connect(mcpServer.server);
+    const result = await client.callTool("coda_push_button", {
+      docId: "doc-123",
+      tableIdOrName: "grid-123",
+      rowIdOrName: "i-row1",
+      columnIdOrName: "c-not-btn",
+    });
+    expect(result.content).toEqual([
+      { type: "text", text: "Failed to push button: Error: Column is not a button" },
+    ]);
   });
 });

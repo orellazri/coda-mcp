@@ -16,6 +16,15 @@ The server exposes the following tools to the MCP client:
 - **`coda_rename_page`**: Renames an existing page.
 - **`coda_peek_page`**: Peek into the beginning of a page and return a limited number of lines.
 - **`coda_resolve_link`**: Resolve metadata given a browser link to a Coda object.
+- **`coda_list_tables`**: List tables in a document.
+- **`coda_list_columns`**: List columns in a table.
+- **`coda_list_rows`**: List rows in a table with optional filtering and sorting.
+- **`coda_get_row`**: Get a single row from a table.
+- **`coda_upsert_rows`**: Insert or upsert rows into a table.
+- **`coda_update_row`**: Update a single row in a table.
+- **`coda_delete_row`**: Delete a single row from a table.
+- **`coda_delete_rows`**: Delete multiple rows from a table.
+- **`coda_push_button`**: Push a button column on a row in a table.
 
 ## Usage
 

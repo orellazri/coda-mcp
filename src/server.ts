@@ -3,7 +3,22 @@ import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import z from "zod";
 import packageJson from "../package.json";
 import { getPageContent } from "./client/helpers";
-import { createPage, listDocs, listPages, resolveBrowserLink, updatePage } from "./client/sdk.gen";
+import {
+  createPage,
+  deleteRow,
+  deleteRows,
+  getRow,
+  listColumns,
+  listDocs,
+  listPages,
+  listRows,
+  listTables,
+  pushButton,
+  resolveBrowserLink,
+  updatePage,
+  updateRow,
+  upsertRows,
+} from "./client/sdk.gen";
 
 export const server = new McpServer({
   name: "coda",
@@ -285,6 +300,279 @@ server.tool(
       return { content: [{ type: "text", text: JSON.stringify(resp.data) }] };
     } catch (error) {
       return { content: [{ type: "text", text: `Failed to resolve link: ${error}` }], isError: true };
+    }
+  },
+);
+
+server.tool(
+  "coda_list_tables",
+  "List tables in a document",
+  {
+    docId: z.string().describe("The ID of the document to list tables from"),
+    limit: z.number().int().positive().optional().describe("The number of tables to return - optional, defaults to 25"),
+    nextPageToken: z
+      .string()
+      .optional()
+      .describe(
+        "The token needed to get the next page of results, returned from a previous call to this tool - optional",
+      ),
+  },
+  async ({ docId, limit, nextPageToken }): Promise<CallToolResult> => {
+    try {
+      const listLimit = nextPageToken ? undefined : limit;
+
+      const resp = await listTables({
+        path: { docId },
+        query: { limit: listLimit, pageToken: nextPageToken ?? undefined },
+        throwOnError: true,
+      });
+
+      return { content: [{ type: "text", text: JSON.stringify(resp.data) }] };
+    } catch (error) {
+      return { content: [{ type: "text", text: `Failed to list tables: ${error}` }], isError: true };
+    }
+  },
+);
+
+server.tool(
+  "coda_list_columns",
+  "List columns in a table",
+  {
+    docId: z.string().describe("The ID of the document"),
+    tableIdOrName: z.string().describe("The ID or name of the table"),
+    limit: z.number().int().positive().optional().describe("The number of columns to return - optional"),
+    nextPageToken: z
+      .string()
+      .optional()
+      .describe(
+        "The token needed to get the next page of results, returned from a previous call to this tool - optional",
+      ),
+  },
+  async ({ docId, tableIdOrName, limit, nextPageToken }): Promise<CallToolResult> => {
+    try {
+      const listLimit = nextPageToken ? undefined : limit;
+
+      const resp = await listColumns({
+        path: { docId, tableIdOrName },
+        query: { limit: listLimit, pageToken: nextPageToken ?? undefined },
+        throwOnError: true,
+      });
+
+      return { content: [{ type: "text", text: JSON.stringify(resp.data) }] };
+    } catch (error) {
+      return { content: [{ type: "text", text: `Failed to list columns: ${error}` }], isError: true };
+    }
+  },
+);
+
+server.tool(
+  "coda_list_rows",
+  "List rows in a table with optional filtering and sorting",
+  {
+    docId: z.string().describe("The ID of the document"),
+    tableIdOrName: z.string().describe("The ID or name of the table"),
+    query: z
+      .string()
+      .optional()
+      .describe('Filter rows by column value, e.g. "Column Name":"value" - optional'),
+    sortBy: z
+      .enum(["createdAt", "natural", "updatedAt"])
+      .optional()
+      .describe("Sort order for returned rows - optional"),
+    useColumnNames: z
+      .boolean()
+      .optional()
+      .default(true)
+      .describe("Use column names instead of column IDs in the output - defaults to true"),
+    limit: z.number().int().positive().optional().describe("The number of rows to return - optional"),
+    nextPageToken: z
+      .string()
+      .optional()
+      .describe(
+        "The token needed to get the next page of results, returned from a previous call to this tool - optional",
+      ),
+  },
+  async ({ docId, tableIdOrName, query, sortBy, useColumnNames, limit, nextPageToken }): Promise<CallToolResult> => {
+    try {
+      const listLimit = nextPageToken ? undefined : limit;
+
+      const resp = await listRows({
+        path: { docId, tableIdOrName },
+        query: {
+          query: query ?? undefined,
+          sortBy: sortBy ?? undefined,
+          useColumnNames,
+          limit: listLimit,
+          pageToken: nextPageToken ?? undefined,
+        },
+        throwOnError: true,
+      });
+
+      return { content: [{ type: "text", text: JSON.stringify(resp.data) }] };
+    } catch (error) {
+      return { content: [{ type: "text", text: `Failed to list rows: ${error}` }], isError: true };
+    }
+  },
+);
+
+server.tool(
+  "coda_get_row",
+  "Get a single row from a table",
+  {
+    docId: z.string().describe("The ID of the document"),
+    tableIdOrName: z.string().describe("The ID or name of the table"),
+    rowIdOrName: z.string().describe("The ID or name of the row"),
+    useColumnNames: z
+      .boolean()
+      .optional()
+      .default(true)
+      .describe("Use column names instead of column IDs in the output - defaults to true"),
+  },
+  async ({ docId, tableIdOrName, rowIdOrName, useColumnNames }): Promise<CallToolResult> => {
+    try {
+      const resp = await getRow({
+        path: { docId, tableIdOrName, rowIdOrName },
+        query: { useColumnNames },
+        throwOnError: true,
+      });
+
+      return { content: [{ type: "text", text: JSON.stringify(resp.data) }] };
+    } catch (error) {
+      return { content: [{ type: "text", text: `Failed to get row: ${error}` }], isError: true };
+    }
+  },
+);
+
+server.tool(
+  "coda_upsert_rows",
+  "Insert or upsert rows into a table",
+  {
+    docId: z.string().describe("The ID of the document"),
+    tableIdOrName: z.string().describe("The ID or name of the table"),
+    rows: z
+      .string()
+      .describe(
+        'JSON string of rows to upsert, e.g. [{"cells": [{"column": "Name", "value": "Alice"}, {"column": "Age", "value": 30}]}]',
+      ),
+    keyColumns: z
+      .string()
+      .optional()
+      .describe("JSON string of column IDs or names to use as upsert keys, e.g. [\"Name\"] - optional"),
+  },
+  async ({ docId, tableIdOrName, rows, keyColumns }): Promise<CallToolResult> => {
+    try {
+      const parsedRows = JSON.parse(rows);
+      const parsedKeyColumns = keyColumns ? JSON.parse(keyColumns) : undefined;
+
+      const resp = await upsertRows({
+        path: { docId, tableIdOrName },
+        body: { rows: parsedRows, keyColumns: parsedKeyColumns },
+        throwOnError: true,
+      });
+
+      return { content: [{ type: "text", text: JSON.stringify(resp.data) }] };
+    } catch (error) {
+      return { content: [{ type: "text", text: `Failed to upsert rows: ${error}` }], isError: true };
+    }
+  },
+);
+
+server.tool(
+  "coda_update_row",
+  "Update a single row in a table",
+  {
+    docId: z.string().describe("The ID of the document"),
+    tableIdOrName: z.string().describe("The ID or name of the table"),
+    rowIdOrName: z.string().describe("The ID or name of the row to update"),
+    cells: z
+      .string()
+      .describe(
+        'JSON string of cells to update, e.g. [{"column": "Name", "value": "Bob"}, {"column": "Age", "value": 25}]',
+      ),
+  },
+  async ({ docId, tableIdOrName, rowIdOrName, cells }): Promise<CallToolResult> => {
+    try {
+      const parsedCells = JSON.parse(cells);
+
+      const resp = await updateRow({
+        path: { docId, tableIdOrName, rowIdOrName },
+        body: { row: { cells: parsedCells } },
+        throwOnError: true,
+      });
+
+      return { content: [{ type: "text", text: JSON.stringify(resp.data) }] };
+    } catch (error) {
+      return { content: [{ type: "text", text: `Failed to update row: ${error}` }], isError: true };
+    }
+  },
+);
+
+server.tool(
+  "coda_delete_row",
+  "Delete a single row from a table",
+  {
+    docId: z.string().describe("The ID of the document"),
+    tableIdOrName: z.string().describe("The ID or name of the table"),
+    rowIdOrName: z.string().describe("The ID or name of the row to delete"),
+  },
+  async ({ docId, tableIdOrName, rowIdOrName }): Promise<CallToolResult> => {
+    try {
+      const resp = await deleteRow({
+        path: { docId, tableIdOrName, rowIdOrName },
+        throwOnError: true,
+      });
+
+      return { content: [{ type: "text", text: JSON.stringify(resp.data) }] };
+    } catch (error) {
+      return { content: [{ type: "text", text: `Failed to delete row: ${error}` }], isError: true };
+    }
+  },
+);
+
+server.tool(
+  "coda_delete_rows",
+  "Delete multiple rows from a table",
+  {
+    docId: z.string().describe("The ID of the document"),
+    tableIdOrName: z.string().describe("The ID or name of the table"),
+    rowIds: z.string().describe('JSON string of row IDs to delete, e.g. ["i-row1", "i-row2"]'),
+  },
+  async ({ docId, tableIdOrName, rowIds }): Promise<CallToolResult> => {
+    try {
+      const parsedRowIds = JSON.parse(rowIds);
+
+      const resp = await deleteRows({
+        path: { docId, tableIdOrName },
+        body: { rowIds: parsedRowIds },
+        throwOnError: true,
+      });
+
+      return { content: [{ type: "text", text: JSON.stringify(resp.data) }] };
+    } catch (error) {
+      return { content: [{ type: "text", text: `Failed to delete rows: ${error}` }], isError: true };
+    }
+  },
+);
+
+server.tool(
+  "coda_push_button",
+  "Push a button column on a row in a table",
+  {
+    docId: z.string().describe("The ID of the document"),
+    tableIdOrName: z.string().describe("The ID or name of the table"),
+    rowIdOrName: z.string().describe("The ID or name of the row"),
+    columnIdOrName: z.string().describe("The ID or name of the button column"),
+  },
+  async ({ docId, tableIdOrName, rowIdOrName, columnIdOrName }): Promise<CallToolResult> => {
+    try {
+      const resp = await pushButton({
+        path: { docId, tableIdOrName, rowIdOrName, columnIdOrName },
+        throwOnError: true,
+      });
+
+      return { content: [{ type: "text", text: JSON.stringify(resp.data) }] };
+    } catch (error) {
+      return { content: [{ type: "text", text: `Failed to push button: ${error}` }], isError: true };
     }
   },
 );
