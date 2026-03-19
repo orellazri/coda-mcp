@@ -1,19 +1,31 @@
-import { close, connect } from "mcp-testing-kit";
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import * as helpers from "./client/helpers";
+import * as helpers from "./helpers";
 import * as sdk from "./client/sdk.gen";
 import { server as mcpServer } from "./server";
 
 vi.mock("./client/sdk.gen");
-vi.mock("./client/helpers");
+vi.mock("./helpers");
 vi.mock("axios");
 
-describe("MCP Server", () => {
-  afterEach(async () => {
-    await close(mcpServer.server);
-    vi.clearAllMocks();
-  });
+async function connect(server: typeof mcpServer.server) {
+  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+  await server.connect(serverTransport);
+  const client = new Client({ name: "test-client", version: "0.0.0" });
+  await client.connect(clientTransport);
+  return {
+    listTools: () => client.listTools(),
+    callTool: (name: string, args: Record<string, unknown> = {}) => client.callTool({ name, arguments: args }),
+  };
+}
 
+afterEach(async () => {
+  await mcpServer.server.close();
+  vi.clearAllMocks();
+});
+
+describe("MCP Server", () => {
   it("should have all tools", async () => {
     const client = await connect(mcpServer.server);
     const result = await client.listTools();
@@ -1117,7 +1129,14 @@ describe("coda_upsert_rows", () => {
     } as any);
 
     const client = await connect(mcpServer.server);
-    const rows = JSON.stringify([{ cells: [{ column: "Name", value: "Alice" }, { column: "Age", value: 31 }] }]);
+    const rows = JSON.stringify([
+      {
+        cells: [
+          { column: "Name", value: "Alice" },
+          { column: "Age", value: 31 },
+        ],
+      },
+    ]);
     const keyColumns = JSON.stringify(["Name"]);
     await client.callTool("coda_upsert_rows", {
       docId: "doc-123",
@@ -1128,7 +1147,14 @@ describe("coda_upsert_rows", () => {
     expect(sdk.upsertRows).toHaveBeenCalledWith({
       path: { docId: "doc-123", tableIdOrName: "grid-123" },
       body: {
-        rows: [{ cells: [{ column: "Name", value: "Alice" }, { column: "Age", value: 31 }] }],
+        rows: [
+          {
+            cells: [
+              { column: "Name", value: "Alice" },
+              { column: "Age", value: 31 },
+            ],
+          },
+        ],
         keyColumns: ["Name"],
       },
       throwOnError: true,
@@ -1176,9 +1202,7 @@ describe("coda_update_row", () => {
       rowIdOrName: "i-row1",
       cells,
     });
-    expect(result.content).toEqual([
-      { type: "text", text: JSON.stringify({ requestId: "req-300", id: "i-row1" }) },
-    ]);
+    expect(result.content).toEqual([{ type: "text", text: JSON.stringify({ requestId: "req-300", id: "i-row1" }) }]);
     expect(sdk.updateRow).toHaveBeenCalledWith({
       path: { docId: "doc-123", tableIdOrName: "grid-123", rowIdOrName: "i-row1" },
       body: { row: { cells: [{ column: "Name", value: "Bob" }] } },
@@ -1227,9 +1251,7 @@ describe("coda_delete_row", () => {
       tableIdOrName: "grid-123",
       rowIdOrName: "i-row1",
     });
-    expect(result.content).toEqual([
-      { type: "text", text: JSON.stringify({ requestId: "req-400", id: "i-row1" }) },
-    ]);
+    expect(result.content).toEqual([{ type: "text", text: JSON.stringify({ requestId: "req-400", id: "i-row1" }) }]);
     expect(sdk.deleteRow).toHaveBeenCalledWith({
       path: { docId: "doc-123", tableIdOrName: "grid-123", rowIdOrName: "i-row1" },
       throwOnError: true,
@@ -1331,8 +1353,6 @@ describe("coda_push_button", () => {
       rowIdOrName: "i-row1",
       columnIdOrName: "c-not-btn",
     });
-    expect(result.content).toEqual([
-      { type: "text", text: "Failed to push button: Error: Column is not a button" },
-    ]);
+    expect(result.content).toEqual([{ type: "text", text: "Failed to push button: Error: Column is not a button" }]);
   });
 });

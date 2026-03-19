@@ -8,7 +8,7 @@ export default defineConfig([
   { files: ["**/*.{js,mjs,cjs,ts}"], languageOptions: { globals: globals.browser } },
   tseslint.configs.recommended,
   {
-    ignores: ["dist", "src/api/openapi.ts"],
+    ignores: ["dist", "coverage", "src/client"],
   },
   {
     rules: {

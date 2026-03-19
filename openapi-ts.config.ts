@@ -5,6 +5,7 @@ export default defineConfig({
   output: {
     format: "prettier",
     path: "src/client",
+    tsConfigPath: null,
   },
   plugins: ["@hey-api/client-axios"],
 });

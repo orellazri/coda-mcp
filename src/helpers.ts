@@ -1,5 +1,5 @@
 import axios from "axios";
-import { beginPageContentExport, getPageContentExportStatus } from "./sdk.gen";
+import { beginPageContentExport, getPageContentExportStatus } from "./client/sdk.gen";
 
 export async function getPageContent(docId: string, pageIdOrName: string) {
   let requestId: string | undefined;
@@ -22,7 +22,7 @@ export async function getPageContent(docId: string, pageIdOrName: string) {
 
     requestId = beginExportResp.data.id;
   } catch (error) {
-    throw new Error(`Failed to get page content: ${error}`);
+    throw new Error(`Failed to get page content: ${error}`, { cause: error });
   }
 
   // Poll for export status
@@ -49,7 +49,7 @@ export async function getPageContent(docId: string, pageIdOrName: string) {
         break;
       }
     } catch (error) {
-      throw new Error(`Failed to get page content export status: ${error}`);
+      throw new Error(`Failed to get page content export status: ${error}`, { cause: error });
     }
 
     retries++;

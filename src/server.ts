@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import z from "zod";
 import packageJson from "../package.json";
-import { getPageContent } from "./client/helpers";
+import { getPageContent } from "./helpers";
 import {
   createPage,
   deleteRow,
@@ -23,10 +23,6 @@ import {
 export const server = new McpServer({
   name: "coda",
   version: packageJson.version,
-  capabilities: {
-    resources: {},
-    tools: {},
-  },
 });
 
 server.tool(
@@ -184,7 +180,7 @@ server.tool(
           pageIdOrName,
         },
         body: {
-          // @ts-expect-error auto-generated client types
+          // @ts-ignore contentUpdate not in generated types
           contentUpdate: {
             insertionMode: "replace",
             canvasContent: { format: "markdown", content },
@@ -216,7 +212,7 @@ server.tool(
           pageIdOrName,
         },
         body: {
-          // @ts-expect-error auto-generated client types
+          // @ts-ignore contentUpdate not in generated types
           contentUpdate: {
             insertionMode: "append",
             canvasContent: { format: "markdown", content },
@@ -371,10 +367,7 @@ server.tool(
   {
     docId: z.string().describe("The ID of the document"),
     tableIdOrName: z.string().describe("The ID or name of the table"),
-    query: z
-      .string()
-      .optional()
-      .describe('Filter rows by column value, e.g. "Column Name":"value" - optional'),
+    query: z.string().optional().describe('Filter rows by column value, e.g. "Column Name":"value" - optional'),
     sortBy: z
       .enum(["createdAt", "natural", "updatedAt"])
       .optional()
@@ -457,7 +450,7 @@ server.tool(
     keyColumns: z
       .string()
       .optional()
-      .describe("JSON string of column IDs or names to use as upsert keys, e.g. [\"Name\"] - optional"),
+      .describe('JSON string of column IDs or names to use as upsert keys, e.g. ["Name"] - optional'),
   },
   async ({ docId, tableIdOrName, rows, keyColumns }): Promise<CallToolResult> => {
     try {
