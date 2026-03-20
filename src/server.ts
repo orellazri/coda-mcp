@@ -377,6 +377,13 @@ server.tool(
       .optional()
       .default(true)
       .describe("Use column names instead of column IDs in the output - defaults to true"),
+    valueFormat: z
+      .enum(["simple", "simpleWithArrays", "rich"])
+      .optional()
+      .default("rich")
+      .describe(
+        "The format that cell values are returned as. 'rich' returns detailed objects for images, people, and references. 'simple' returns plain strings. Defaults to 'rich'.",
+      ),
     limit: z.number().int().positive().optional().describe("The number of rows to return - optional"),
     nextPageToken: z
       .string()
@@ -385,7 +392,7 @@ server.tool(
         "The token needed to get the next page of results, returned from a previous call to this tool - optional",
       ),
   },
-  async ({ docId, tableIdOrName, query, sortBy, useColumnNames, limit, nextPageToken }): Promise<CallToolResult> => {
+  async ({ docId, tableIdOrName, query, sortBy, useColumnNames, valueFormat, limit, nextPageToken }): Promise<CallToolResult> => {
     try {
       const listLimit = nextPageToken ? undefined : limit;
 
@@ -395,6 +402,7 @@ server.tool(
           query: query ?? undefined,
           sortBy: sortBy ?? undefined,
           useColumnNames,
+          valueFormat,
           limit: listLimit,
           pageToken: nextPageToken ?? undefined,
         },
@@ -420,12 +428,19 @@ server.tool(
       .optional()
       .default(true)
       .describe("Use column names instead of column IDs in the output - defaults to true"),
+    valueFormat: z
+      .enum(["simple", "simpleWithArrays", "rich"])
+      .optional()
+      .default("rich")
+      .describe(
+        "The format that cell values are returned as. 'rich' returns detailed objects for images, people, and references. 'simple' returns plain strings. Defaults to 'rich'.",
+      ),
   },
-  async ({ docId, tableIdOrName, rowIdOrName, useColumnNames }): Promise<CallToolResult> => {
+  async ({ docId, tableIdOrName, rowIdOrName, useColumnNames, valueFormat }): Promise<CallToolResult> => {
     try {
       const resp = await getRow({
         path: { docId, tableIdOrName, rowIdOrName },
-        query: { useColumnNames },
+        query: { useColumnNames, valueFormat },
         throwOnError: true,
       });
 

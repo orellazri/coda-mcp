@@ -981,6 +981,7 @@ describe("coda_list_rows", () => {
         query: undefined,
         sortBy: undefined,
         useColumnNames: true,
+        valueFormat: "rich",
         limit: undefined,
         pageToken: undefined,
       },
@@ -1004,6 +1005,7 @@ describe("coda_list_rows", () => {
         query: '"Name":"Alice"',
         sortBy: "updatedAt",
         useColumnNames: true,
+        valueFormat: "rich",
         limit: undefined,
         pageToken: undefined,
       },
@@ -1027,6 +1029,7 @@ describe("coda_list_rows", () => {
         query: undefined,
         sortBy: undefined,
         useColumnNames: true,
+        valueFormat: "rich",
         limit: undefined,
         pageToken: "token-abc",
       },
@@ -1063,7 +1066,7 @@ describe("coda_get_row", () => {
     ]);
     expect(sdk.getRow).toHaveBeenCalledWith({
       path: { docId: "doc-123", tableIdOrName: "grid-123", rowIdOrName: "i-row1" },
-      query: { useColumnNames: true },
+      query: { useColumnNames: true, valueFormat: "rich" },
       throwOnError: true,
     });
   });
@@ -1082,7 +1085,7 @@ describe("coda_get_row", () => {
     });
     expect(sdk.getRow).toHaveBeenCalledWith({
       path: { docId: "doc-123", tableIdOrName: "grid-123", rowIdOrName: "i-row1" },
-      query: { useColumnNames: false },
+      query: { useColumnNames: false, valueFormat: "rich" },
       throwOnError: true,
     });
   });
