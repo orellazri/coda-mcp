@@ -5,6 +5,10 @@ This project implements a Model Context Protocol (MCP) server that acts as a bri
 > [!NOTE]  
 > This MCP server is not developed or maintained by Coda; it's a community-built project.
 
+## Hosted deployment
+
+A hosted deployment is available on [Fronteir AI](https://fronteir.ai/mcp/orellazi-coda-mcp).
+
 ## Features
 
 The server exposes the following tools to the MCP client:
